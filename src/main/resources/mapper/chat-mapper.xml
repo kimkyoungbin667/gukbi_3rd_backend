@@ -1,0 +1,26 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Suppress IntelliJ Warning -->
+<!-- noinspection MyBatisUnresolvedReference -->
+
+<mapper namespace="Chat">
+    <select id="getChatRoomList" resultType="chatRoom" parameterType="String">
+        SELECT
+            cr.room_idx,
+            cr.user1_idx,
+            u1.user_name AS user1_name,
+            cr.user2_idx,
+            u2.user_name AS user2_name,
+            cr.created_at
+        FROM
+            tb_chatRoomList cr
+                JOIN
+            tb_user u1 ON cr.user1_idx = u1.user_idx
+                JOIN
+            tb_user u2 ON cr.user2_idx = u2.user_idx
+        WHERE
+            cr.user1_idx = #{userIdx} OR cr.user2_idx = #{userIdx}
+    </select>
+
+</mapper>
