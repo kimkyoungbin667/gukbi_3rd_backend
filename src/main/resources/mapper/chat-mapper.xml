@@ -1,11 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!-- Suppress IntelliJ Warning -->
-<!-- noinspection MyBatisUnresolvedReference -->
-
 <mapper namespace="Chat">
-    <select id="getChatRoomList" resultType="chatRoom" parameterType="String">
+    <select id="getChatRoomList" resultType="chatRoom" parameterType="Long">
         SELECT
             cr.room_idx,
             cr.user1_idx,
@@ -21,6 +18,10 @@
             tb_user u2 ON cr.user2_idx = u2.user_idx
         WHERE
             cr.user1_idx = #{userIdx} OR cr.user2_idx = #{userIdx}
+    </select>
+
+    <select id="getChatRoomDetail" resultType="chatRoomDetail" parameterType="Long">
+        SELECT * FROM tb_chatRoomDetail WHERE room_idx = #{roomIdx}
     </select>
 
 </mapper>
