@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Board">
+    <select id="findAll" resultType="board">
+        SELECT
+            b.board_idx AS board_idx,    -- 게시판 인덱스
+            b.title,               -- 제목
+            b.content,             -- 내용
+            b.good,                -- 좋아요 수
+            b.created,             -- 생성일
+            b.delete_yn,           -- 삭제 여부
+            u.user_id,             -- 작성자 아이디
+            u.user_idx AS user_idx,     -- 작성자 인덱스
+            u.user_name            -- 작성자 이름
+        FROM
+            tb_board b
+                LEFT JOIN
+            tb_user u
+            ON
+                b.create_by = u.user_idx
+        WHERE
+            b.delete_yn = 'N'
+    </select>
+
+    <select id="findTitle" resultType="board" parameterType="String">
+        SELECT
+            b.board_idx AS board_idx,    -- 게시판 인덱스
+            b.title,               -- 제목
+            b.content,             -- 내용
+            b.good,                -- 좋아요 수
+            b.created,             -- 생성일
+            b.delete_yn,           -- 삭제 여부
+            u.user_id,             -- 작성자 아이디
+            u.user_idx AS user_idx,     -- 작성자 인덱스
+            u.user_name            -- 작성자 이름
+        FROM
+            tb_board b
+                LEFT JOIN
+            tb_user u
+            ON
+                b.create_by = u.user_idx
+        WHERE
+            b.delete_yn = 'N' and b.title LIKE CONCAT('%', #{title}, '%')
+    </select>
+
+    <select id="findWriter" resultType="board" parameterType="String">
+        SELECT
+            b.board_idx AS board_idx,    -- 게시판 인덱스
+            b.title,               -- 제목
+            b.content,             -- 내용
+            b.good,                -- 좋아요 수
+            b.created,             -- 생성일
+            b.delete_yn,           -- 삭제 여부
+            u.user_id,             -- 작성자 아이디
+            u.user_idx AS user_idx,     -- 작성자 인덱스
+            u.user_name            -- 작성자 이름
+        FROM
+            tb_board b
+                LEFT JOIN
+            tb_user u
+            ON
+                b.create_by = u.user_idx
+        WHERE
+            b.delete_yn = 'N' and u.user_name LIKE CONCAT('%', #{writer}, '%')
+    </select>
+
+    <select id="detailBoard" parameterType="Integer" resultType="board">
+        SELECT
+            b.board_idx,
+            b.title,
+            b.content,
+            b.good,
+            DATE_FORMAT(b.created, '%Y-%m-%d %H:%i:%s') AS created, -- 날짜를 문자열로 포맷
+            b.delete_yn,
+            u.user_id AS userId,       -- 작성자 ID
+            u.user_name AS userName,   -- 작성자 이름
+            b.create_by AS userIdx    -- 작성자 인덱스 (BIGINT 타입)
+        FROM
+            tb_board b
+                LEFT JOIN
+            tb_user u
+            ON
+                b.create_by = u.user_idx
+        WHERE
+            b.board_idx = #{board_idx}
+    </select>
+
+    <insert id="writeBoard" parameterType="board">
+        INSERT INTO tb_board (
+        title,
+        content,
+        create_by,
+        created,
+        delete_yn,
+        modified,
+        modified_by
+        )
+        VALUES (
+        #{title},     <!-- 게시글 제목 -->
+        #{content},   <!-- 게시글 내용 -->
+        #{userIdx},   <!-- 작성자 인덱스 -->
+        NOW(),        <!-- 생성 시간 -->
+        'N',           <!-- 삭제 여부 기본값 -->
+        NOW(),
+        #{userIdx}
+        )
+    </insert>
+
+    <update id="deleteBoard" parameterType="Integer">
+        UPDATE tb_board
+        SET delete_yn = 'Y'
+        WHERE board_idx = #{board_idx}
+    </update>
+
+    <update id="reviseBoard" parameterType="board">
+        UPDATE tb_board
+        SET title = #{title}, content = #{content}
+        WHERE board_idx = #{boardIdx}
+    </update>
+
+    <update id="goodBoard" parameterType="Integer">
+        UPDATE tb_board
+        SET good = good+1
+        WHERE board_idx = #{boardId}
+    </update>
+
+
+</mapper>
