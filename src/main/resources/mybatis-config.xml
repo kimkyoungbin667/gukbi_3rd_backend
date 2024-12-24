@@ -11,6 +11,7 @@
     <!-- 타입 별칭 설정 -->
     <typeAliases>
         <typeAlias type="com.project.animal.dto.chat.ChatRoomDTO" alias="chatRoom"/>
+        <typeAlias type="com.project.animal.dto.chat.ChatRoomDetailDTO" alias="chatRoomDetail"/>
     </typeAliases>
 
 </configuration>
