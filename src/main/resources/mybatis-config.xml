@@ -10,9 +10,7 @@
 
     <!-- 타입 별칭 설정 -->
     <typeAliases>
-<!--        <typeAlias type="com.project.dto.BoardDTO" alias="board"/>-->
-
-
+        <typeAlias type="com.project.animal.dto.chat.ChatRoomDTO" alias="chatRoom"/>
     </typeAliases>
 
 </configuration>
