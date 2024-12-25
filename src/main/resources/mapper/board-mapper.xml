@@ -1,0 +1,18 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Board">
+    <select id="getBoardList" resultType="BoardListResponseDTO">
+        SELECT
+            b.board_idx AS boardIdx,  -- 게시글 인덱스
+            b.title AS title,        -- 제목
+            b.good AS good,          -- 추천 수
+            u.user_name AS userName,      -- 작성자 이름
+            b.created AS created     -- 생성일
+        FROM
+            tb_board b
+                JOIN
+            tb_user u ON b.create_by = u.user_idx
+    </select>
+
+</mapper>
