@@ -12,6 +12,7 @@
     <typeAliases>
         <typeAlias type="com.project.animal.dto.chat.ChatRoomDTO" alias="chatRoom"/>
         <typeAlias type="com.project.animal.dto.chat.ChatRoomDetailDTO" alias="chatRoomDetail"/>
+        <typeAlias type="com.project.animal.dto.board.BoardListResponseDTO" alias="BoardListResponseDTO"/>
     </typeAliases>
 
 </configuration>
