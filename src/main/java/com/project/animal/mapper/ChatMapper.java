@@ -14,5 +14,7 @@ public interface ChatMapper {
 
     // 채팅방 상세보기
     List<ChatRoomDetailDTO> getChatRoomDetail(@Param("roomIdx") Long roomIdx);
-    
+
+    // 채팅 메세지 보내기
+    Integer sendMessage();
 }
