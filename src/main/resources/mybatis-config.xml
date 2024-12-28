@@ -11,6 +11,8 @@
     <!-- 타입 별칭 설정 -->
     <typeAliases>
         <typeAlias type="com.project.animal.dto.board.BoardListResponseDTO" alias="boardListResponseDTO"/>
+        <typeAlias type="com.project.animal.dto.board.BoardDetailResponseDTO" alias="boardDetailResponseDTO"/>
+
         <typeAlias type="com.project.animal.dto.chat.ChatRoomDTO" alias="chatRoom"/>
         <typeAlias type="com.project.animal.dto.chat.ChatRoomDetailDTO" alias="chatRoomDetail"/>
         <typeAlias type="com.project.animal.dto.chat.SendMessageDTO" alias="sendMessageDTO"/>

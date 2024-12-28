@@ -4,26 +4,51 @@
 <mapper namespace="Board">
     <select id="getBoardList" resultType="boardListResponseDTO">
         SELECT
-            b.board_idx AS boardIdx,                -- 게시글 인덱스
-            b.title AS title,                       -- 제목
-            b.like_count AS likeCount,              -- 좋아요 수
-            b.view_count AS viewCount,              -- 조회수
-            u.user_nickname AS createdByUserNickname, -- 작성자 닉네임
-            b.created_at AS createdAt               -- 작성일
+            b.board_idx AS boardIdx,
+            b.title AS title,
+            b.like_count AS likeCount,
+            b.view_count AS viewCount,
+            u.user_nickname AS createdByUserNickname,
+            b.created_at AS createdAt
         FROM
             tb_board b
                 JOIN tb_user u ON b.created_by_user_idx = u.user_idx
         WHERE
-            b.is_deleted = 'N'
+            b.is_deleted = 0
         ORDER BY
-            b.created_at DESC                       -- 최신순 정렬
-            LIMIT #{limit} OFFSET #{offset};            -- 페이징 처리
+            b.created_at DESC -- 최신순 정렬
+            LIMIT #{limit} OFFSET #{offset};
     </select>
 
     <select id="getBoardListCount" resultType="Integer">
         SELECT COUNT(*) AS totalCount
         FROM tb_board
-        WHERE is_deleted = 'N';
+        WHERE is_deleted = 0;
     </select>
+
+    <select id="getBoardDetail" resultType="boardDetailResponseDTO">
+        SELECT
+            b.board_idx AS boardIdx,               -- 게시글 인덱스
+            b.title AS title,                     -- 제목
+            b.content AS content,                 -- 내용
+            b.like_count AS likeCount,            -- 좋아요 수
+            b.is_deleted AS isDeleted,            -- 삭제 여부
+            b.created_at AS createdAt,            -- 작성일
+            b.created_by_user_idx AS createdByUserIdx, -- 작성자 인덱스
+            u.user_nickname AS createdByUserNickname,  -- 작성자 닉네임
+            b.view_count AS viewCount             -- 조회수
+        FROM
+            tb_board b
+                LEFT JOIN
+            tb_user u ON b.created_by_user_idx = u.user_idx
+        WHERE
+            b.board_idx = #{boardIdx} and b.is_deleted = 0;
+    </select>
+
+    <update id="deleteBoard" parameterType="Long">
+        UPDATE tb_board
+        SET is_deleted = 1
+        WHERE board_idx = #{boardIdx}
+    </update>
 
 </mapper>

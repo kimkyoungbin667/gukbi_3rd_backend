@@ -1,5 +1,6 @@
 package com.project.animal.service;
 
+import com.project.animal.dto.board.BoardDetailResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,13 @@ public class BoardService {
 
     public List<BoardListResponseDTO> getBoardList(int limit, int offset) {
         return boardRepository.getBoardList(limit, offset);
+    }
+
+    public BoardDetailResponseDTO getBoardDetail(long boardIdx) {
+        return boardRepository.getBoardDetail(boardIdx);
+    }
+
+    public Integer deleteBoard(long boardIdx) {
+        return boardRepository.deleteBoard(boardIdx);
     }
 }
