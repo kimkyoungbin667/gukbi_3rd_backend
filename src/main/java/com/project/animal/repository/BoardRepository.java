@@ -1,5 +1,6 @@
 package com.project.animal.repository;
 
+import com.project.animal.dto.board.BoardDetailResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -21,5 +22,13 @@ public class BoardRepository {
 
     public int getBoardListCount() {
         return sql.selectOne("Board.getBoardListCount");
+    }
+
+    public BoardDetailResponseDTO getBoardDetail(long boardIdx) {
+        return sql.selectOne("Board.getBoardDetail", Map.of("boardIdx", boardIdx));
+    }
+
+    public Integer deleteBoard(long boardIdx) {
+        return sql.update("Board.deleteBoard", Map.of("boardIdx", boardIdx));
     }
 }
