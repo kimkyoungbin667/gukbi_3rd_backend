@@ -14,7 +14,11 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final SqlDataSourceScriptDatabaseInitializer dataSourceScriptDatabaseInitializer;
 
-    public List<BoardListResponseDTO> getBoardList() {
-        return boardRepository.getBoardList();
+    public int getBoardListCount() {
+        return boardRepository.getBoardListCount();
+    }
+
+    public List<BoardListResponseDTO> getBoardList(int limit, int offset) {
+        return boardRepository.getBoardList(limit, offset);
     }
 }
