@@ -4,15 +4,26 @@
 <mapper namespace="Board">
     <select id="getBoardList" resultType="boardListResponseDTO">
         SELECT
-            b.board_idx AS boardIdx,  -- 게시글 인덱스
-            b.title AS title,        -- 제목
-            b.good AS good,          -- 추천 수
-            u.user_name AS userName,      -- 작성자 이름
-            b.created AS created     -- 생성일
+            b.board_idx AS boardIdx,                -- 게시글 인덱스
+            b.title AS title,                       -- 제목
+            b.like_count AS likeCount,              -- 좋아요 수
+            b.view_count AS viewCount,              -- 조회수
+            u.user_nickname AS createdByUserNickname, -- 작성자 닉네임
+            b.created_at AS createdAt               -- 작성일
         FROM
             tb_board b
-                JOIN
-            tb_user u ON b.create_by = u.user_idx
+                JOIN tb_user u ON b.created_by_user_idx = u.user_idx
+        WHERE
+            b.is_deleted = 'N'
+        ORDER BY
+            b.created_at DESC                       -- 최신순 정렬
+            LIMIT #{limit} OFFSET #{offset};            -- 페이징 처리
+    </select>
+
+    <select id="getBoardListCount" resultType="Integer">
+        SELECT COUNT(*) AS totalCount
+        FROM tb_board
+        WHERE is_deleted = 'N';
     </select>
 
 </mapper>
