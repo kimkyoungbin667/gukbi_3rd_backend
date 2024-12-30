@@ -145,19 +145,19 @@ public class BoardController {
 
         ResponseData responseData = new ResponseData();
 
-        String userKey = request.getRemoteAddr(); // 사용자별 고유 키
-        Bucket bucket = bucketService.getBucketForUser(userKey);
-
-        System.out.println(userKey);
-        if (!bucket.tryConsume(1)) {
-
-            return ResponseEntity.ok(responseData);
-        }
-
-        System.out.println(requestData);
-        Long BoardIdx = Long.parseLong(requestData.get("boardIdx").toString());
-
         try {
+
+            Long BoardIdx = Long.parseLong(requestData.get("boardIdx").toString());
+
+            String userKey = request.getRemoteAddr(); // 사용자별 고유 키
+            Bucket bucket = bucketService.getBucketForUser(userKey);
+
+            if (!bucket.tryConsume(1)) {
+
+                responseData.setError(ErrorMessage.TOO_MUCH_ACCESS);
+                return ResponseEntity.ok(responseData);
+            }
+
             Integer increaseViewResult = boardService.increaseView(BoardIdx);
 
             if (increaseViewResult >= 1) {
