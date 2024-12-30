@@ -1,0 +1,30 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.project.animal.mapper.MapMapper">
+
+    <insert id="addWalk" parameterType="WalkReq" useGeneratedKeys="true" keyProperty="logId">
+        insert into WALKINGLOGS
+        (user_idx,
+         walk_name,
+         walk_date,
+         start_time,
+         end_time,
+         distance,
+         duration)
+        VALUES (#{userIdx},#{walkName}, #{walkDate}, #{startTime}, #{endTime}, #{distance}, #{duration})
+    </insert>
+
+    <insert id="addPath" parameterType="PathReq">
+        insert into WALKINGPATHS
+        (
+         log_id,
+         sequence,
+         latitude,
+         longitude)
+            VALUES(#{logId}, #{sequence}, #{latitude}, #{longitude})
+
+
+    </insert>
+
+</mapper>
