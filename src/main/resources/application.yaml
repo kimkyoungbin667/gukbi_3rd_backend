@@ -9,7 +9,7 @@ spring:
     url: jdbc:mysql://localhost:3306/animal?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: 1234
-
+asdadasd
 # mybatis
 mybatis:
   mapper-locations: classpath:mapper/*.xml
