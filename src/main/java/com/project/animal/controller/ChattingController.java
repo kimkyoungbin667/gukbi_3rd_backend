@@ -3,15 +3,16 @@ package com.project.animal.controller;
 import com.project.animal.dto.chat.SendMessageDTO;
 import com.project.animal.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
-@RequiredArgsConstructor
 public class ChattingController {
 
-    private final ChatService chatService;
+    @Autowired
+    private ChatService chatService;
 
     @MessageMapping("/room/{roomIdx}/join")
     @SendTo("/topic/room/{roomIdx}")

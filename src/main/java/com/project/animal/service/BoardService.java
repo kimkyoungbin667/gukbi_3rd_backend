@@ -2,32 +2,30 @@ package com.project.animal.service;
 
 import com.project.animal.dto.board.BoardDetailResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
-import com.project.animal.repository.BoardRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
+import com.project.animal.mapper.BoardMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class BoardService {
-    private final BoardRepository boardRepository;
-    private final SqlDataSourceScriptDatabaseInitializer dataSourceScriptDatabaseInitializer;
 
-    public int getBoardListCount() {
-        return boardRepository.getBoardListCount();
-    }
+    @Autowired
+    private BoardMapper boardMapper;
+    
+    // 총 게시글 수 찾기
+    public int getBoardListCount() { return boardMapper.getBoardListCount();}
 
-    public List<BoardListResponseDTO> getBoardList(int limit, int offset) {
-        return boardRepository.getBoardList(limit, offset);
-    }
+    // 모든 게시글 불러오기 (페이지네이션 포함)
+    public List<BoardListResponseDTO> getBoardList(int limit, int offset) {return boardMapper.getBoardList(limit, offset);}
 
-    public BoardDetailResponseDTO getBoardDetail(long boardIdx) {
-        return boardRepository.getBoardDetail(boardIdx);
-    }
+    // 게시글 상세보기
+    public BoardDetailResponseDTO getBoardDetail(long boardIdx) {return boardMapper.getBoardDetail(boardIdx);}
 
-    public Integer deleteBoard(long boardIdx) {
-        return boardRepository.deleteBoard(boardIdx);
-    }
+    // 게시글 삭제
+    public Integer deleteBoard(long boardIdx) {return boardMapper.deleteBoard(boardIdx);}
+
+    // 조회수 증가
+    public Integer increaseView(long BoardIdx) {return boardMapper.increaseView(BoardIdx);}
 }

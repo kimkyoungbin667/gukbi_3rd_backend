@@ -13,4 +13,14 @@ public class ResponseData {
         this.code = "200";
         this.msg = "success";
     }
+
+    public ResponseData(ErrorMessage msg) {
+        this.code = msg.getCode();
+        this.msg = msg.getMessage();
+    }
+
+    public void setError(ErrorMessage msg) {
+        this.code = msg.getCode();
+        this.msg = msg.getMessage();
+    }
 }
