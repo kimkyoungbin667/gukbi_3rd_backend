@@ -3,26 +3,29 @@ package com.project.animal.service;
 import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import com.project.animal.dto.chat.SendMessageDTO;
-import com.project.animal.repository.ChatRepository;
-import lombok.RequiredArgsConstructor;
+import com.project.animal.mapper.ChatMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ChatService {
 
-    private final ChatRepository chatRepository;
+    @Autowired
+    private ChatMapper chatMapper;
 
+    // 특정 채팅방 채팅내역 불러오기
     public List<ChatRoomDetailDTO> getChatRoomDetail(Long roomIdx) {
-        return chatRepository.getChatRoomDetail(roomIdx);
+        return chatMapper.getChatRoomDetail(roomIdx);
     }
 
+    // 자신이 참여하는 모든 채팅방 목록 불러오기
     public List<ChatRoomDTO> getChatRoomList(Long userIdx) {
-        return chatRepository.getChatRoomList(userIdx);
+
+        System.out.println(userIdx);
+        return chatMapper.getChatRoomList(userIdx);
     }
 
-    public int sendMessage(SendMessageDTO message) {
-        return chatRepository.sendMessage(message);
-    }
+    // 메세지 전송하기
+    public int sendMessage(SendMessageDTO message) {return chatMapper.sendMessage(message);}
 }
