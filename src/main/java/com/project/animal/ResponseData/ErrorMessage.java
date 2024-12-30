@@ -11,7 +11,7 @@ public enum ErrorMessage {
     WRITE_FALSE("200", "글자 입력 실패"),
     BOARD_SIZE_ZERO("200", "조회된 데이터가 없습니다."),
     BOARD_UPDTE_FALSE("200", "글자 수정 실패"),
-    
+    TOO_MUCH_ACCESS("201", "트래픽 제한"),
     
     //전체적
     ALL_ERROR("500", "서버 내부 오류가 발생했습니다.");
