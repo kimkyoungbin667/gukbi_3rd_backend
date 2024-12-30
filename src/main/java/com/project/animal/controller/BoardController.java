@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping("/api/board")
+@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") // 3000 포트의 클라이언트 허용
 public class BoardController {
 
@@ -115,6 +116,7 @@ public class BoardController {
     public ResponseEntity<ResponseData> deleteBoard(@RequestParam long boardIdx) {
         ResponseData responseData = new ResponseData();
 
+        System.out.println("받음");
         try {
             Integer deleteResult = boardService.deleteBoard(boardIdx);
 
@@ -175,4 +177,5 @@ public class BoardController {
             return ResponseEntity.status(500).body(responseData);
         }
     }
+
 }
