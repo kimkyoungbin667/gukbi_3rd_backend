@@ -1,8 +1,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="Chat">
-    <select id="getChatRoomList" resultType="chatRoom" parameterType="Long">
+<mapper namespace="com.project.animal.mapper.ChatMapper">
+    <select id="getChatRoomList" resultType="com.project.animal.dto.chat.ChatRoomDTO" parameterType="Long">
         SELECT
             cr.room_idx, -- 채팅방 ID
             CASE
@@ -28,12 +28,11 @@
             cr.user1_idx = #{userIdx} OR cr.user2_idx = #{userIdx}
     </select>
 
-
-    <select id="getChatRoomDetail" resultType="chatRoomDetail" parameterType="Long">
+    <select id="getChatRoomDetail" resultType="com.project.animal.dto.chat.ChatRoomDetailDTO" parameterType="Long">
         SELECT * FROM tb_chatRoomDetail WHERE room_idx = #{roomIdx}
     </select>
 
-    <insert id="sendMessage" parameterType="sendMessageDTO">
+    <insert id="sendMessage" parameterType="com.project.animal.dto.chat.SendMessageDTO">
         INSERT INTO tb_chatRoomDetail(sender_idx, message, sent_at, room_idx)
         VALUES(
                   #{senderIdx},

@@ -6,6 +6,7 @@ import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import com.project.animal.service.ChatService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -14,18 +15,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequiredArgsConstructor
 @RequestMapping("/api/chat")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ChatController {
 
-    private final ChatService chatService;
+    @Autowired
+    private ChatService chatService;
 
     // 채팅방 목록 불러오기
     @GetMapping("/getChatRoomList")
     @ResponseBody
     public ResponseEntity<ResponseData> getChatRoomList(@RequestParam(value = "userIdx") Long userIdx) {
         ResponseData responseData = new ResponseData();
+
+        System.out.println(userIdx);
         try{
             List<ChatRoomDTO> list = chatService.getChatRoomList(userIdx);
 

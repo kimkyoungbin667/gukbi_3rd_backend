@@ -40,6 +40,12 @@ dependencies {
 
 	// WebSocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// Bucket4j
+	implementation 'com.bucket4j:bucket4j-core:8.3.0'
+
+
+
 }
 
 tasks.named('test') {
