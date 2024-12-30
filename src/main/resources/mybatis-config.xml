@@ -1,21 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-
-    <!-- camelCase 매핑 활성화 -->
     <settings>
-        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- MyBatis 설정 -->
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+        <setting name="cacheEnabled" value="true" />
     </settings>
-
-    <!-- 타입 별칭 설정 -->
-    <typeAliases>
-        <typeAlias type="com.project.animal.dto.board.BoardListResponseDTO" alias="boardListResponseDTO"/>
-        <typeAlias type="com.project.animal.dto.board.BoardDetailResponseDTO" alias="boardDetailResponseDTO"/>
-
-        <typeAlias type="com.project.animal.dto.chat.ChatRoomDTO" alias="chatRoom"/>
-        <typeAlias type="com.project.animal.dto.chat.ChatRoomDetailDTO" alias="chatRoomDetail"/>
-        <typeAlias type="com.project.animal.dto.chat.SendMessageDTO" alias="sendMessageDTO"/>
-    </typeAliases>
-
 </configuration>

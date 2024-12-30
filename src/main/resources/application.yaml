@@ -10,7 +10,10 @@ spring:
     username: root
     password: 1234
 
+
 # mybatis
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   config-location: classpath:mybatis-config.xml
+  #MybatisAlias
+  type-aliases-package: com.project.animal.dto
