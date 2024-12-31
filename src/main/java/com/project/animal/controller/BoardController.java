@@ -9,6 +9,8 @@ import com.project.animal.service.BoardService;
 import com.project.animal.service.BucketService;
 import lombok.RequiredArgsConstructor;
 import io.github.bucket4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @CrossOrigin(origins = "http://localhost:3000") // 3000 포트의 클라이언트 허용
 public class BoardController {
 
+    private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
+
     @Autowired
     private BoardService boardService;
 
@@ -42,10 +46,9 @@ public class BoardController {
         BoardResponseData responseData = new BoardResponseData();
 
         try {
-            // 1. 페이지 번호 검증
+            // 유효하지 않은 에러 메세지 일 때
             if (page < 1) {
-                responseData.setCode("400");
-                responseData.setMsg("유효하지 않은 페이지 번호입니다.");
+                responseData.setError(ErrorMessage.INVALID_PAGE_VALUE);
                 return ResponseEntity.badRequest().body(responseData);
             }
 
@@ -53,29 +56,27 @@ public class BoardController {
             int offset = (page - 1) * limit; // 시작 위치 계산
             int totalCount = boardService.getBoardListCount(); // 총 게시글 수 가져오기
 
-
             int totalPages = (int) Math.ceil((double) totalCount / limit); // 총 페이지 수 계산
 
             List<BoardListResponseDTO> list = boardService.getBoardList(limit, offset);
 
+            // 게시글 목록이 있을 때
             if (!list.isEmpty()) {
                 responseData.setData(list);
                 responseData.setTotalPages(totalPages); // 총 페이지 수 추가
                 return ResponseEntity.ok(responseData);
             }
 
-            responseData.setError(ErrorMessage.BOARD_SIZE_ZERO);
-            responseData.setCode("204");
-            responseData.setMsg("조회된 데이터가 없습니다.");
-            responseData.setData(new ArrayList<>()); // 빈 리스트 반환
-            responseData.setTotalPages(totalPages);
-            return ResponseEntity.status(204).body(responseData);
+            // 게시글 목록 조회 실패 시
+            responseData.setError(ErrorMessage.BOARD_FETCH_FAILED);
+            return ResponseEntity.ok(responseData);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setError(ErrorMessage.ALL_ERROR);
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
 
@@ -89,23 +90,22 @@ public class BoardController {
         try {
             BoardDetailResponseDTO boardDetailResponseDTO = boardService.getBoardDetail(boardIdx);
 
-            System.out.println(boardDetailResponseDTO);
+            // 조회한 게시글 내용이 있을 때
             if (boardDetailResponseDTO.getContent() != null) {
                 responseData.setData(boardDetailResponseDTO);
                 return ResponseEntity.ok(responseData);
             }
 
-            responseData.setCode("204");
-            responseData.setMsg("조회된 데이터가 없습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(204).body(responseData);
+            // 해당 데이터가 없을 시
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.ok(responseData);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setCode("500");
-            responseData.setMsg("서버 내부 오류가 발생했습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
     
@@ -117,21 +117,21 @@ public class BoardController {
         try {
             Integer deleteResult = boardService.deleteBoard(boardIndexResponseDTO);
 
+            // 게시글 삭제 완료 시
             if (deleteResult >= 1) {
                 return ResponseEntity.ok(responseData);
             }
 
-            responseData.setCode("204");
-            responseData.setMsg("삭제할 데이터가 없습니다");
-            responseData.setData(null);
-            return ResponseEntity.status(204).body(responseData);
+            // 해당 데이터가 없을 시
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.ok(responseData);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setCode("500");
-            responseData.setMsg("서버 내부 오류가 발생했습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
 
@@ -143,33 +143,33 @@ public class BoardController {
         Long boardIdx = Long.parseLong(requestData.get("boardIdx").toString());
 
         try {
-
             String userKey = request.getRemoteAddr(); // 사용자별 고유 키
             Bucket bucket = bucketService.getBucketForUser(userKey);
 
-            if (!bucket.tryConsume(1)) {
+            // 토큰이 정상적으로 소비되었을 때
+            if (bucket.tryConsume(1)) {
 
-                responseData.setError(ErrorMessage.TOO_MUCH_ACCESS);
+                Integer increaseViewResult = boardService.increaseView(boardIdx);
+
+                if (increaseViewResult >= 1) {
+                    return ResponseEntity.ok(responseData);
+                }
+
+                // 해당 데이터가 없을 시
+                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
                 return ResponseEntity.ok(responseData);
             }
 
-            Integer increaseViewResult = boardService.increaseView(boardIdx);
+            // 토큰이 부족할 때
+            responseData.setError(ErrorMessage.TOO_MANY_REQUESTS);
+            return ResponseEntity.ok(responseData);
 
-            if (increaseViewResult >= 1) {
-                return ResponseEntity.ok(responseData);
-            }
-
-            responseData.setCode("204");
-            responseData.setMsg("삭제할 데이터가 없습니다");
-            responseData.setData(null);
-            return ResponseEntity.status(204).body(responseData);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setCode("500");
-            responseData.setMsg("서버 내부 오류가 발생했습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
 
@@ -182,21 +182,21 @@ public class BoardController {
 
             Integer updateResult = boardService.saveEditBoard(boardEditResponseDTO);
 
+            // 게시글 수정 성공 시
             if (updateResult >= 1) {
                 return ResponseEntity.ok(responseData);
             }
 
-            responseData.setCode("204");
-            responseData.setMsg("게시글 수정 오류");
-            responseData.setData(null);
-            return ResponseEntity.status(204).body(responseData);
+            // 해당 데이터가 없을 시
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.ok(responseData);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setCode("500");
-            responseData.setMsg("서버 내부 오류가 발생했습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
 
@@ -205,26 +205,25 @@ public class BoardController {
     public ResponseEntity<ResponseData> writeBoard(@RequestBody BoardWriteResponseDTO boardWriteResponseDTO) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println(boardWriteResponseDTO);
         try {
 
             Integer writeResult = boardService.writeBoard(boardWriteResponseDTO);
 
+            // 게시글 작성 성공 시
             if (writeResult >= 1) {
                 return ResponseEntity.ok(responseData);
             }
 
-            responseData.setCode("204");
-            responseData.setMsg("게시글 수정 오류");
-            responseData.setData(null);
-            return ResponseEntity.status(204).body(responseData);
+            // 해당 데이터가 없을 시
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.ok(responseData);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            responseData.setCode("500");
-            responseData.setMsg("서버 내부 오류가 발생했습니다.");
-            responseData.setData(null);
-            return ResponseEntity.status(500).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
         }
     }
 }
