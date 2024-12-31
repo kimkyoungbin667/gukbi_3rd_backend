@@ -9,7 +9,7 @@
             b.like_count AS likeCount,
             b.view_count AS viewCount,
             u.user_nickname AS createdByUserNickname,
-            b.created_at AS createdAt
+            DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt -- 작성일 (년-월-일 시:분:초)
         FROM
             tb_board b
                 JOIN tb_user u ON b.created_by_user_idx = u.user_idx
@@ -33,7 +33,7 @@
             b.content AS content,                 -- 내용
             b.like_count AS likeCount,            -- 좋아요 수
             b.is_deleted AS isDeleted,            -- 삭제 여부
-            b.created_at AS createdAt,            -- 작성일
+            DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt, -- 작성일 (년-월-일 시:분:초)
             b.created_by_user_idx AS createdByUserIdx, -- 작성자 인덱스
             u.user_nickname AS createdByUserNickname,  -- 작성자 닉네임
             b.view_count AS viewCount             -- 조회수
@@ -62,5 +62,19 @@
         SET content = #{content}, updated_by_user_idx = #{userIdx}
         WHERE board_idx = #{boardIdx}
     </update>
+
+    <insert id="writeBoard" parameterType="BoardWriteResponseDTO">
+        INSERT tb_board(
+            title,
+            content,
+            created_by_user_idx
+        )
+        VALUES(
+               #{title},
+               #{content},
+               #{userIdx}
+        )
+    </insert>
+
 
 </mapper>
