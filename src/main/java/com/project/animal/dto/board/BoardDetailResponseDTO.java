@@ -13,6 +13,6 @@ public class BoardDetailResponseDTO {
     private Long createdByUserIdx;      // 작성자 인덱스
     private String createdByUserNickname;// 작성자 닉네임
     private Integer viewCount;          // 조회수
-    private Timestamp createdAt;        // 작성일
+    private String createdAt;        // 작성일
 }
 

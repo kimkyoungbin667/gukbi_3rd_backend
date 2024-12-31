@@ -1,8 +1,6 @@
 package com.project.animal.service;
 
-import com.project.animal.dto.board.BoardDetailResponseDTO;
-import com.project.animal.dto.board.BoardEditResponseDTO;
-import com.project.animal.dto.board.BoardListResponseDTO;
+import com.project.animal.dto.board.*;
 import com.project.animal.mapper.BoardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,7 @@ public class BoardService {
     public BoardDetailResponseDTO getBoardDetail(long boardIdx) {return boardMapper.getBoardDetail(boardIdx);}
 
     // 게시글 삭제하기
-    public Integer deleteBoard(long boardIdx) {return boardMapper.deleteBoard(boardIdx);}
+    public Integer deleteBoard(BoardIndexResponseDTO boardIndexResponseDTO) {return boardMapper.deleteBoard(boardIndexResponseDTO);}
 
     // 조회수 올리기
     public Integer increaseView(long boardIdx) {return boardMapper.increaseView(boardIdx);}
@@ -33,4 +31,9 @@ public class BoardService {
     // 게시글 수정하기
     public Integer saveEditBoard(BoardEditResponseDTO boardEditResponseDTO) {
         return boardMapper.saveEditBoard(boardEditResponseDTO);}
+
+    // 게시글 작성하기
+    public Integer writeBoard(BoardWriteResponseDTO boardWriteResponseDTO) {
+        return boardMapper.writeBoard(boardWriteResponseDTO);
+    }
 }

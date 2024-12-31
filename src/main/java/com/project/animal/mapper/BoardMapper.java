@@ -1,9 +1,7 @@
 package com.project.animal.mapper;
 
 import com.project.animal.ResponseData.BoardResponseData;
-import com.project.animal.dto.board.BoardDetailResponseDTO;
-import com.project.animal.dto.board.BoardEditResponseDTO;
-import com.project.animal.dto.board.BoardListResponseDTO;
+import com.project.animal.dto.board.*;
 import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -25,11 +23,14 @@ public interface BoardMapper {
     BoardDetailResponseDTO getBoardDetail(@Param("boardIdx") long boardIdx);
 
     // 게시글 삭제하기
-    Integer deleteBoard(@Param("boardIdx") long boardIdx);
+    Integer deleteBoard(BoardIndexResponseDTO boardIndexResponseDTO);
 
     // 조회수 올리기
     Integer increaseView(@Param("boardIdx") long boardIdx);
 
     // 게시글 수정하기
     Integer saveEditBoard(BoardEditResponseDTO boardEditResponseDTO);
+
+    // 게시글 작성하기
+    Integer writeBoard(BoardWriteResponseDTO boardWriteResponseDTO);
 }

@@ -3,9 +3,7 @@ package com.project.animal.controller;
 import com.project.animal.ResponseData.BoardResponseData;
 import com.project.animal.ResponseData.ErrorMessage;
 import com.project.animal.ResponseData.ResponseData;
-import com.project.animal.dto.board.BoardDetailResponseDTO;
-import com.project.animal.dto.board.BoardEditResponseDTO;
-import com.project.animal.dto.board.BoardListResponseDTO;
+import com.project.animal.dto.board.*;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.service.BoardService;
 import com.project.animal.service.BucketService;
@@ -112,13 +110,12 @@ public class BoardController {
     }
     
     // 게시글 삭제하기
-    @PostMapping("/deleteBoard")
-    public ResponseEntity<ResponseData> deleteBoard(@RequestParam long boardIdx) {
+    @PostMapping("/boardDelete")
+    public ResponseEntity<ResponseData> deleteBoard(@RequestBody BoardIndexResponseDTO boardIndexResponseDTO) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println("받음");
         try {
-            Integer deleteResult = boardService.deleteBoard(boardIdx);
+            Integer deleteResult = boardService.deleteBoard(boardIndexResponseDTO);
 
             if (deleteResult >= 1) {
                 return ResponseEntity.ok(responseData);
@@ -136,7 +133,6 @@ public class BoardController {
             responseData.setData(null);
             return ResponseEntity.status(500).body(responseData);
         }
-
     }
 
     // 게시글 조회수 올리기
@@ -178,7 +174,7 @@ public class BoardController {
     }
 
     // 게시글 수정하기
-    @PostMapping("/saveEditBoard")
+    @PostMapping("/saveBoardEdit")
     public ResponseEntity<ResponseData> saveEditBoard(@RequestBody BoardEditResponseDTO boardEditResponseDTO) {
         ResponseData responseData = new ResponseData();
 
@@ -187,6 +183,34 @@ public class BoardController {
             Integer updateResult = boardService.saveEditBoard(boardEditResponseDTO);
 
             if (updateResult >= 1) {
+                return ResponseEntity.ok(responseData);
+            }
+
+            responseData.setCode("204");
+            responseData.setMsg("게시글 수정 오류");
+            responseData.setData(null);
+            return ResponseEntity.status(204).body(responseData);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseData.setCode("500");
+            responseData.setMsg("서버 내부 오류가 발생했습니다.");
+            responseData.setData(null);
+            return ResponseEntity.status(500).body(responseData);
+        }
+    }
+
+    // 게시글 작성하기
+    @PostMapping("/boardWrite")
+    public ResponseEntity<ResponseData> writeBoard(@RequestBody BoardWriteResponseDTO boardWriteResponseDTO) {
+        ResponseData responseData = new ResponseData();
+
+        System.out.println(boardWriteResponseDTO);
+        try {
+
+            Integer writeResult = boardService.writeBoard(boardWriteResponseDTO);
+
+            if (writeResult >= 1) {
                 return ResponseEntity.ok(responseData);
             }
 
