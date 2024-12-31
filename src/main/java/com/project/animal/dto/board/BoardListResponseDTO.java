@@ -12,6 +12,6 @@ public class BoardListResponseDTO {
     private Integer likeCount;          // 좋아요 수
     private String createdByUserNickname;// 작성자 닉네임
     private Integer viewCount;          // 조회수
-    private Timestamp createdAt;        // 작성일 
+    private String createdAt;        // 작성일
             
 }
