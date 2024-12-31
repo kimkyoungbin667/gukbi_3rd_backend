@@ -1,6 +1,7 @@
 package com.project.animal.service;
 
 import com.project.animal.dto.board.BoardDetailResponseDTO;
+import com.project.animal.dto.board.BoardEditResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.mapper.BoardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,13 @@ public class BoardService {
     // 게시글 상세보기
     public BoardDetailResponseDTO getBoardDetail(long boardIdx) {return boardMapper.getBoardDetail(boardIdx);}
 
-    // 게시글 삭제
+    // 게시글 삭제하기
     public Integer deleteBoard(long boardIdx) {return boardMapper.deleteBoard(boardIdx);}
 
-    // 조회수 증가
-    public Integer increaseView(long BoardIdx) {return boardMapper.increaseView(BoardIdx);}
+    // 조회수 올리기
+    public Integer increaseView(long boardIdx) {return boardMapper.increaseView(boardIdx);}
+
+    // 게시글 수정하기
+    public Integer saveEditBoard(BoardEditResponseDTO boardEditResponseDTO) {
+        return boardMapper.saveEditBoard(boardEditResponseDTO);}
 }
