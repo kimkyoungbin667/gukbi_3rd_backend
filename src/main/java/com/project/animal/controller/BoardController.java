@@ -4,6 +4,7 @@ import com.project.animal.ResponseData.BoardResponseData;
 import com.project.animal.ResponseData.ErrorMessage;
 import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.board.BoardDetailResponseDTO;
+import com.project.animal.dto.board.BoardEditResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.service.BoardService;
@@ -27,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping("/api/board")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") // 3000 포트의 클라이언트 허용
 public class BoardController {
 
@@ -111,7 +111,7 @@ public class BoardController {
         }
     }
     
-    // 게시글 삭제
+    // 게시글 삭제하기
     @PostMapping("/deleteBoard")
     public ResponseEntity<ResponseData> deleteBoard(@RequestParam long boardIdx) {
         ResponseData responseData = new ResponseData();
@@ -144,10 +144,9 @@ public class BoardController {
     public ResponseEntity<ResponseData> increaseView(@RequestBody HashMap<String, Object> requestData, HttpServletRequest request) {
 
         ResponseData responseData = new ResponseData();
+        Long boardIdx = Long.parseLong(requestData.get("boardIdx").toString());
 
         try {
-
-            Long BoardIdx = Long.parseLong(requestData.get("boardIdx").toString());
 
             String userKey = request.getRemoteAddr(); // 사용자별 고유 키
             Bucket bucket = bucketService.getBucketForUser(userKey);
@@ -158,7 +157,7 @@ public class BoardController {
                 return ResponseEntity.ok(responseData);
             }
 
-            Integer increaseViewResult = boardService.increaseView(BoardIdx);
+            Integer increaseViewResult = boardService.increaseView(boardIdx);
 
             if (increaseViewResult >= 1) {
                 return ResponseEntity.ok(responseData);
@@ -178,4 +177,30 @@ public class BoardController {
         }
     }
 
+    // 게시글 수정하기
+    @PostMapping("/saveEditBoard")
+    public ResponseEntity<ResponseData> saveEditBoard(@RequestBody BoardEditResponseDTO boardEditResponseDTO) {
+        ResponseData responseData = new ResponseData();
+
+        try {
+
+            Integer updateResult = boardService.saveEditBoard(boardEditResponseDTO);
+
+            if (updateResult >= 1) {
+                return ResponseEntity.ok(responseData);
+            }
+
+            responseData.setCode("204");
+            responseData.setMsg("게시글 수정 오류");
+            responseData.setData(null);
+            return ResponseEntity.status(204).body(responseData);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseData.setCode("500");
+            responseData.setMsg("서버 내부 오류가 발생했습니다.");
+            responseData.setData(null);
+            return ResponseEntity.status(500).body(responseData);
+        }
+    }
 }
