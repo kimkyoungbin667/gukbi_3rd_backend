@@ -2,6 +2,7 @@ package com.project.animal.mapper;
 
 import com.project.animal.ResponseData.BoardResponseData;
 import com.project.animal.dto.board.BoardDetailResponseDTO;
+import com.project.animal.dto.board.BoardEditResponseDTO;
 import com.project.animal.dto.board.BoardListResponseDTO;
 import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.dto.chat.ChatRoomDetailDTO;
@@ -28,4 +29,7 @@ public interface BoardMapper {
 
     // 조회수 올리기
     Integer increaseView(@Param("boardIdx") long boardIdx);
+
+    // 게시글 수정하기
+    Integer saveEditBoard(BoardEditResponseDTO boardEditResponseDTO);
 }
