@@ -10,6 +10,18 @@ spring:
     username: root
     password: 1234
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: mypetstory12@gmail.com
+    password: fwfp tqik ziyi xmrf
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 # mybatis
 mybatis:
   mapper-locations: classpath:mapper/*.xml
