@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 public class RegisterDTO {
     private String userName;
-    private String userNickname;
     private String userEmail;
     private LocalDate userBirth;
     private String userPassword;
