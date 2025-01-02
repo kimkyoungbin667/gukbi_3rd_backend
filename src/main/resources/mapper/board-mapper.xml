@@ -76,5 +76,23 @@
         )
     </insert>
 
+    <select id="getBoardComment" resultType="BoardCommentDTO" parameterType="long">
+        SELECT
+            c.comment_idx AS commentIdx,
+            c.content AS content,
+            c.author_idx AS authorIdx,
+            c.parent_idx AS parentIdx,
+            u.user_nickname AS authorNickname,
+            u.user_profile_url AS authorProfileUrl
+        FROM tb_comment c
+                 LEFT JOIN tb_user u ON c.author_idx = u.user_idx
+        WHERE c.board_idx = #{boardIdx}
+    </select>
+
+    <insert id="writeBoardComment" parameterType="BoardWriteCommentDTO">
+        INSERT INTO tb_comment(board_idx, author_idx, content)
+        VALUES(#{boardIdx}, #{authorIdx}, #{comment})
+    </insert>
+
 
 </mapper>
