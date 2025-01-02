@@ -44,4 +44,9 @@ public class BoardService {
 
     // 댓글, 대댓글 조회하기
     public List<BoardCommentDTO> getBoardComment(Long longBoardIdx) {return boardMapper.getBoardComment(longBoardIdx);}
+
+    // 댓글 작성하기
+    public Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO) {
+        return boardMapper.writeBoardComment(boardWriteCommentDTO);
+    }
 }

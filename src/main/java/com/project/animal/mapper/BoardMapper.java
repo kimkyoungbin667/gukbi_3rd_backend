@@ -37,4 +37,6 @@ public interface BoardMapper {
     // 댓글, 대댓글 불러오기
     List<BoardCommentDTO> getBoardComment(Long longBoardIdx);
 
+    // 댓글 작성하기
+    Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO);
 }

@@ -259,4 +259,33 @@ public class BoardController {
         }
     }
 
+    // 댓글 작성하기
+    @PostMapping("/writeBoardComment")
+    public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardWriteCommentDTO boardWriteCommentDTO) {
+        ResponseData responseData = new ResponseData();
+
+        try {
+            // 댓글 목록 가져오기
+            Integer writeResult = boardService.writeBoardComment(boardWriteCommentDTO);
+
+            System.out.println(writeResult);
+            // 업데이트 된게 없을 때
+            if (writeResult < 1) {
+                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+                return ResponseEntity.ok(responseData);
+            }
+
+            // 댓글 작성 성공했을 때
+            responseData.setData(writeResult);
+            return ResponseEntity.ok(responseData);
+
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+    }
+
 }
