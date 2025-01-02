@@ -2,13 +2,18 @@ package com.project.animal.service;
 
 import com.project.animal.dto.board.*;
 import com.project.animal.mapper.BoardMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class BoardService {
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private BoardMapper boardMapper;
@@ -36,4 +41,7 @@ public class BoardService {
     public Integer writeBoard(BoardWriteResponseDTO boardWriteResponseDTO) {
         return boardMapper.writeBoard(boardWriteResponseDTO);
     }
+
+    // 댓글, 대댓글 조회하기
+    public List<BoardCommentDTO> getBoardComment(Long longBoardIdx) {return boardMapper.getBoardComment(longBoardIdx);}
 }
