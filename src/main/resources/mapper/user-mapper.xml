@@ -4,10 +4,10 @@
 <mapper namespace="com.project.animal.mapper.UserMapper">
     <insert id="registerUser" parameterType="com.project.animal.dto.user.RegisterDTO">
         INSERT INTO tb_user (
-            user_name, user_nickname, user_email, user_password,
+            user_name, user_email, user_password,
             user_birth, is_active, is_admin, kakao_id, social_type, user_profile_url
         ) VALUES (
-                     #{userName}, #{userNickname}, #{userEmail}, #{userPassword},
+                     #{userName}, #{userEmail}, #{userPassword},
                      #{userBirth}, TRUE, FALSE, #{kakaoId}, #{socialType}, #{userProfileUrl}
                  )
     </insert>
