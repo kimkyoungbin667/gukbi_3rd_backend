@@ -89,6 +89,10 @@
         WHERE c.board_idx = #{boardIdx}
     </select>
 
+    <insert id="writeBoardComment" parameterType="BoardWriteCommentDTO">
+        INSERT INTO tb_comment(board_idx, author_idx, content)
+        VALUES(#{boardIdx}, #{authorIdx}, #{comment})
+    </insert>
 
 
 </mapper>
