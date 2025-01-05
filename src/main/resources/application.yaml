@@ -22,6 +22,9 @@ spring:
           starttls:
             enable: true
 
+jwt:
+  secret: RA4A7xk3zhWx3czBZPCtZpbalul7W4uZ1p3NzTjAC9kFbHX3CmRtL7
+
 # mybatis
 mybatis:
   mapper-locations: classpath:mapper/*.xml

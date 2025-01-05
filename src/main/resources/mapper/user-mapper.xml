@@ -3,14 +3,30 @@
 
 <mapper namespace="com.project.animal.mapper.UserMapper">
     <insert id="registerUser" parameterType="com.project.animal.dto.user.RegisterDTO">
-        INSERT INTO tb_user (
-            user_name, user_email, user_password,
-            user_birth, is_active, is_admin, kakao_id, social_type, user_profile_url
-        ) VALUES (
-                     #{userName}, #{userEmail}, #{userPassword},
-                     #{userBirth}, TRUE, FALSE, #{kakaoId}, #{socialType}, #{userProfileUrl}
-                 )
+        INSERT INTO tb_user (user_name, user_email, user_password,
+                             user_birth, is_active, is_admin, kakao_id, social_type, user_profile_url)
+        VALUES (#{userName}, #{userEmail}, #{userPassword},
+                #{userBirth}, TRUE, FALSE, #{kakaoId}, #{socialType}, #{userProfileUrl})
     </insert>
 
+    <!-- 로그인 시 사용할 메서드 -->
+    <select id="findByEmail" resultType="com.project.animal.model.User">
+        SELECT user_email, user_password
+        FROM tb_user
+        WHERE user_email = #{userEmail}
+    </select>
 
+    <!-- 사용자 프로필 정보 조회 -->
+    <select id="findUserProfileByEmail" resultType="com.project.animal.model.User">
+        SELECT
+            user_idx,
+            user_name,
+            user_nickname,
+            user_email,
+            user_birth,
+            user_password,
+            user_profile_url
+        FROM tb_user
+        WHERE user_email = #{userEmail}
+    </select>
 </mapper>
