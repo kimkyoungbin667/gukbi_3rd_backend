@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 @Service
@@ -19,15 +20,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userMapper.findByEmail(email);
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        User user = userMapper.findUserById(Long.valueOf(userId)); // ID로 사용자 조회
         if (user == null) {
-            throw new UsernameNotFoundException("User not found");
+            throw new UsernameNotFoundException("User not found with ID: " + userId);
         }
         return new org.springframework.security.core.userdetails.User(
                 user.getUserEmail(),
                 user.getUserPassword(),
-                Collections.emptyList()
+                new ArrayList<>()
         );
     }
 }

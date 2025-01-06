@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper {
     void registerUser(RegisterDTO registerDTO);
     User findByEmail(String userEmail);
-    User findUserProfileByEmail(String userEmail);
+    User findUserById(Long userId);
 }
