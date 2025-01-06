@@ -31,21 +31,33 @@ public class UserService {
     public void registerUser(RegisterDTO registerDTO) {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(registerDTO.getUserPassword());
+        System.out.println("Encoded password during registration: " + encodedPassword);
         registerDTO.setUserPassword(encodedPassword);
         userMapper.registerUser(registerDTO);
     }
+
 
     // 로그인
     public String login(LoginDTO loginDTO) {
         User user = userMapper.findByEmail(loginDTO.getEmail());
         if (user == null) {
+            System.out.println("User not found for email: " + loginDTO.getEmail());
             throw new RuntimeException("Invalid email or password");
         }
-        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
-            boolean isMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword());
-        }
 
-        return jwtUtil.generateToken(user.getUserEmail());
+        System.out.println("User found: ID=" + user.getUserIdx() + ", Email=" + user.getUserEmail());
+
+        if (passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
+            System.out.println("Password match success");
+        } else {
+            System.out.println("Password match failed");
+            System.out.println("Raw password: " + loginDTO.getPassword());
+            System.out.println("Stored password: " + user.getUserPassword());
+        }
+        String token = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
+        System.out.println("Generated token: " + token);
+
+        return token;
     }
 
     public User kakaoLogin(String accessToken) {
@@ -93,10 +105,9 @@ public class UserService {
         return user;
     }
 
-
-
     // 사용자 정보
-    public User findUserProfileByEmail(String email) {
-        return userMapper.findUserProfileByEmail(email);
+    public User findUserProfileById(Long userId) {
+        return userMapper.findUserById(userId);
     }
+
 }

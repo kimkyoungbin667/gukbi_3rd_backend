@@ -50,8 +50,8 @@ public class UserController {
             // 카카오 API 호출 및 사용자 처리
             User user = userService.kakaoLogin(accessToken);
 
-            // JWT 생성
-            String token = jwtUtil.generateToken(user.getUserEmail());
+            // JWT 생성 (ID와 이메일 포함)
+            String token = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
 
             // 응답 데이터 생성
             Map<String, String> response = new HashMap<>();
@@ -64,34 +64,43 @@ public class UserController {
         }
     }
 
-
-
-
-
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfile(@RequestHeader("Authorization") String token) {
-        // 토큰에서 이메일 추출
-        String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
+        try {
+            String actualToken = token.replace("Bearer ", "");
+            System.out.println("Received token: " + actualToken);
 
-        // 이메일로 사용자 정보 조회
-        User user = userService.findUserProfileByEmail(email);
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.out.println("Invalid token.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
 
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            Long userId = jwtUtil.getIdFromToken(actualToken);
+            System.out.println("Extracted user ID: " + userId);
+
+            User user = userService.findUserProfileById(userId);
+            if (user == null) {
+                System.out.println("No user found for ID: " + userId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            UserDTO userDTO = new UserDTO(
+                    user.getUserIdx(),
+                    user.getUserName(),
+                    user.getUserNickname(),
+                    user.getUserEmail(),
+                    user.getUserBirth(),
+                    null,
+                    user.getUserProfileUrl()
+            );
+
+            return ResponseEntity.ok(userDTO);
+        } catch (Exception e) {
+            System.err.println("Error in getUserProfile: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-
-        // User 객체를 UserDTO로 변환
-        UserDTO userDTO = new UserDTO(
-                user.getUserIdx(),
-                user.getUserName(),
-                user.getUserNickname(),
-                user.getUserEmail(),
-                user.getUserBirth(),
-                null // 비밀번호는 제외
-        );
-
-        return ResponseEntity.ok(userDTO);
     }
+
 
 
 
