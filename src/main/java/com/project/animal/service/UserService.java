@@ -3,10 +3,17 @@ package com.project.animal.service;
 import com.project.animal.dto.user.LoginDTO;
 import com.project.animal.model.User;
 import com.project.animal.util.JwtUtil;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.project.animal.dto.user.RegisterDTO;
 import com.project.animal.mapper.UserMapper;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -24,30 +31,83 @@ public class UserService {
     public void registerUser(RegisterDTO registerDTO) {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(registerDTO.getUserPassword());
+        System.out.println("Encoded password during registration: " + encodedPassword);
         registerDTO.setUserPassword(encodedPassword);
         userMapper.registerUser(registerDTO);
     }
 
+
     // 로그인
     public String login(LoginDTO loginDTO) {
         User user = userMapper.findByEmail(loginDTO.getEmail());
-        System.out.println("Retrieved User: " + user);
         if (user == null) {
-            System.out.println("No user found for email: " + loginDTO.getEmail());
+            System.out.println("User not found for email: " + loginDTO.getEmail());
             throw new RuntimeException("Invalid email or password");
         }
-        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
-            System.out.println("Input Password: " + loginDTO.getPassword());
-            System.out.println("Stored Password: " + user.getUserPassword());
-            boolean isMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword());
-            System.out.println("Password Match Result: " + isMatch);
+
+        System.out.println("User found: ID=" + user.getUserIdx() + ", Email=" + user.getUserEmail());
+
+        if (passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
+            System.out.println("Password match success");
+        } else {
+            System.out.println("Password match failed");
+            System.out.println("Raw password: " + loginDTO.getPassword());
+            System.out.println("Stored password: " + user.getUserPassword());
+        }
+        String token = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
+        System.out.println("Generated token: " + token);
+
+        return token;
+    }
+
+    public User kakaoLogin(String accessToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        String kakaoUserInfoUrl = "https://kapi.kakao.com/v2/user/me";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>("", headers);
+
+        ResponseEntity<Map> response;
+        try {
+            response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, entity, Map.class);
+            System.out.println("카카오 API 호출 성공: " + response.getBody());
+        } catch (Exception e) {
+            System.err.println("카카오 API 호출 실패: " + e.getMessage());
+            throw new RuntimeException("카카오 API 호출 실패: " + e.getMessage(), e);
         }
 
-        return jwtUtil.generateToken(user.getUserEmail());
+        Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
+        if (kakaoAccount == null || kakaoAccount.get("email") == null) {
+            throw new RuntimeException("카카오 계정에서 이메일 정보를 가져올 수 없습니다.");
+        }
+
+        String email = (String) kakaoAccount.get("email");
+
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            user = new User();
+            user.setUserEmail(email);
+            user.setUserName((String) ((Map<String, Object>) response.getBody().get("properties")).get("nickname"));
+            user.setKakaoId(response.getBody().get("id").toString());
+            user.setSocialType("KAKAO");
+
+            RegisterDTO registerDTO = new RegisterDTO();
+            registerDTO.setUserEmail(user.getUserEmail());
+            registerDTO.setUserName(user.getUserName());
+            registerDTO.setKakaoId(user.getKakaoId());
+            registerDTO.setSocialType(user.getSocialType());
+
+            userMapper.registerUser(registerDTO);
+        }
+
+        return user;
     }
 
     // 사용자 정보
-    public User findUserProfileByEmail(String email) {
-        return userMapper.findUserProfileByEmail(email);
+    public User findUserProfileById(Long userId) {
+        return userMapper.findUserById(userId);
     }
+
 }
