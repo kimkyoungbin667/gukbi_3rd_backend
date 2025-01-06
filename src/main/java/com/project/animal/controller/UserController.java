@@ -42,6 +42,31 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/kakao-login")
+    public ResponseEntity<Map<String, String>> kakaoLogin(@RequestBody Map<String, String> kakaoData) {
+        String accessToken = kakaoData.get("access_token");
+
+        try {
+            // 카카오 API 호출 및 사용자 처리
+            User user = userService.kakaoLogin(accessToken);
+
+            // JWT 생성
+            String token = jwtUtil.generateToken(user.getUserEmail());
+
+            // 응답 데이터 생성
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+
+            return ResponseEntity.ok(response); // JWT 반환
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "카카오 로그인 실패: " + e.getMessage()));
+        }
+    }
+
+
+
+
 
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfile(@RequestHeader("Authorization") String token) {
