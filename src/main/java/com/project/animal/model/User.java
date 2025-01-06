@@ -15,4 +15,6 @@ public class User {
     private LocalDate userBirth;
     private String userPassword;
     private String userProfileUrl; // 프로필 URL 필드
+    private String kakaoId; // Kakao ID 추가
+    private String socialType;
 }
