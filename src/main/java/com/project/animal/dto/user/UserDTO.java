@@ -14,15 +14,17 @@ public class UserDTO {
     private String userEmail; // 이메일
     private LocalDate userBirth; // 생년월일
     private String userPassword; // 비밀번호
+    private String userProfileUrl;
 
     // 생성자
-    public UserDTO(Long userIdx, String userName, String userNickname, String userEmail, LocalDate userBirth, String userPassword) {
+    public UserDTO(Long userIdx, String userName, String userNickname, String userEmail, LocalDate userBirth, String userPassword, String userProfileUrl) {
         this.userIdx = userIdx;
         this.userName = userName;
         this.userNickname = userNickname;
         this.userEmail = userEmail;
         this.userBirth = userBirth;
         this.userPassword = userPassword;
+        this.userProfileUrl = userProfileUrl;
     }
 
 }
