@@ -2,10 +2,8 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
-import java.sql.Timestamp;
-
 @Data
-public class BoardDetailResponseDTO {
+public class BoardPostReadResDTO {
     private Long boardIdx;              // 게시글 인덱스
     private String title;               // 제목
     private String content;             // 내용
