@@ -19,7 +19,7 @@ public interface BoardMapper {
     Integer createBoardPost(BoardPostCreateReqDTO boardPostCreateReqDTO);
 
     // 게시글 상세보기
-    BoardPostReadResDTO readBoardPost(@Param("boardIdx") long boardIdx);
+    BoardPostReadResDTO readBoardPost(BoardPostReadReqDTO boardPostReadReqDTO);
 
     // 게시글 수정하기
     Integer updateBoardPost(BoardPostUpdateReqDTO boardPostUpdateReqDTO);
@@ -40,4 +40,10 @@ public interface BoardMapper {
 
     // 대댓글 작성하기
     Integer createBoardReply(BoardPostCreateReplyReqDTO boardReplyDTO);
+
+    // 좋아요를 누른지 판단
+    Boolean isLikedPost(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 좋아요 +1 하기
+    Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
 }

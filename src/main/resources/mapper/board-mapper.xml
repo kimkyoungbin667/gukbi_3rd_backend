@@ -5,20 +5,31 @@
 
     <select id="getBoardList" resultType="BoardPostListResDTO">
         SELECT
-            b.board_idx AS boardIdx,
-            b.title AS title,
-            b.like_count AS likeCount,
-            b.view_count AS viewCount,
-            u.user_nickname AS createdByUserNickname,
+            b.board_idx AS boardIdx, -- 게시글 ID
+            b.title AS title,        -- 게시글 제목
+            COALESCE(l.likeCount, 0) AS likeCount, -- 좋아요 수 (tb_like에 값이 없을 경우 0)
+            b.view_count AS viewCount, -- 조회수
+            u.user_nickname AS createdByUserNickname, -- 작성자 닉네임
             DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt -- 작성일 (년-월-일 시:분:초)
         FROM
             tb_board b
-                JOIN tb_user u ON b.created_by_user_idx = u.user_idx
+                JOIN tb_user u ON b.created_by_user_idx = u.user_idx -- 작성자 정보와 조인
+                LEFT JOIN (
+                SELECT
+                    board_idx,                -- 게시글 ID
+                    COUNT(*) AS likeCount     -- 게시글별 좋아요 수
+                FROM
+                    tb_like
+                GROUP BY
+                    board_idx                 -- 게시글별로 그룹화
+            ) l ON b.board_idx = l.board_idx -- 좋아요 수와 조인
         WHERE
-            b.is_deleted = 0
+            b.is_deleted = 0 -- 삭제되지 않은 게시글만 조회
         ORDER BY
             b.created_at DESC -- 최신순 정렬
-            LIMIT #{limit} OFFSET #{offset};
+            LIMIT #{limit} OFFSET #{offset}; -- 페이징 처리
+
+
     </select>
 
     <select id="getBoardListCount" resultType="Integer">
@@ -40,23 +51,39 @@
         )
     </insert>
 
-    <select id="readBoardPost" resultType="BoardPostReadResDTO">
+    <select id="readBoardPost" parameterType="BoardPostReadReqDTO" resultType="BoardPostReadResDTO">
         SELECT
             b.board_idx AS boardIdx,               -- 게시글 인덱스
-            b.title AS title,                     -- 제목
-            b.content AS content,                 -- 내용
-            b.like_count AS likeCount,            -- 좋아요 수
-            b.is_deleted AS isDeleted,            -- 삭제 여부
+            b.title AS title,                      -- 제목
+            b.content AS content,                  -- 내용
+            COALESCE(l.likeCount, 0) AS likeCount, -- 좋아요 수 (없을 경우 0으로 대체)
+            b.is_deleted AS isDeleted,             -- 삭제 여부
             DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt, -- 작성일 (년-월-일 시:분:초)
             b.created_by_user_idx AS createdByUserIdx, -- 작성자 인덱스
             u.user_nickname AS createdByUserNickname,  -- 작성자 닉네임
-            b.view_count AS viewCount             -- 조회수
+            b.view_count AS viewCount,             -- 조회수
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM tb_like tl
+                    WHERE tl.board_idx = b.board_idx AND tl.user_idx = #{userIdx} -- 현재 사용자의 좋아요 여부 확인
+                ) THEN TRUE
+                ELSE FALSE
+                END AS isLiked -- 현재 사용자가 좋아요를 눌렀는지 여부
         FROM
             tb_board b
-                LEFT JOIN
-            tb_user u ON b.created_by_user_idx = u.user_idx
+                LEFT JOIN tb_user u ON b.created_by_user_idx = u.user_idx
+                LEFT JOIN (
+                SELECT
+                    board_idx,
+                    COUNT(*) AS likeCount
+                FROM
+                    tb_like
+                GROUP BY
+                    board_idx
+            ) l ON b.board_idx = l.board_idx -- 좋아요 수 조인
         WHERE
-            b.board_idx = #{boardIdx} and b.is_deleted = 0;
+            b.board_idx = #{boardIdx} AND b.is_deleted = 0;
     </select>
 
     <update id="updateBoardPost" parameterType="BoardPostUpdateReqDTO">
@@ -105,6 +132,21 @@
                   #{comment},
                   #{parentIdx}
               )
+    </insert>
+
+    <select id="isLikedPost" resultType="Boolean">
+        SELECT
+            CASE
+                WHEN COUNT(*) > 0 THEN TRUE
+                ELSE FALSE
+                END AS isLiked
+        FROM tb_like
+        WHERE user_idx = #{userIdx} AND board_idx = #{boardIdx}
+    </select>
+
+    <insert id="upBoardPostLike" parameterType="boardPostUpLikeReqDTO">
+        INSERT INTO tb_like(user_idx, board_idx)
+        VALUES(#{userIdx}, #{boardIdx})
     </insert>
 
 </mapper>

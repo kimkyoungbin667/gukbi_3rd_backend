@@ -123,22 +123,18 @@ public class BoardController {
     }
 
     // 게시글 상세 보기
-    @GetMapping("/readBoardPost")
+    @PostMapping("/readBoardPost")
     @ResponseBody
-    public ResponseEntity<ResponseData> readBoardPost(@RequestParam String boardIdx, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<ResponseData> readBoardPost(@RequestBody BoardPostReadReqDTO boardPostReadReqDTO) {
         ResponseData responseData = new ResponseData();
 
         try {
-            String actualToken = token.replace("Bearer ", "");
-            System.out.println("Received token: " + actualToken);
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-            if (!jwtUtil.validateToken(actualToken)) {
-                System.err.println("권한 검증 실패");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-            }
+            boardPostReadReqDTO.setUserIdx(userIdx);
 
-            Long longBoardIdx = Long.parseLong(boardIdx);
-            BoardPostReadResDTO boardPostReadResDTO = boardService.readBoardPost(longBoardIdx);
+            System.out.println(boardPostReadReqDTO);
+            BoardPostReadResDTO boardPostReadResDTO = boardService.readBoardPost(boardPostReadReqDTO);
 
             // 조회한 게시글 내용이 있을 때
             if (boardPostReadResDTO.getContent() != null) {
@@ -150,6 +146,11 @@ public class BoardController {
             responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
             return ResponseEntity.ok(responseData);
 
+        }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
         }
         // 서버 에러 발생 시
         catch (Exception e) {
@@ -164,6 +165,7 @@ public class BoardController {
     public ResponseEntity<ResponseData> updateBoardPost(@RequestBody BoardPostUpdateReqDTO boardPostUpdateReqDTO) {
         ResponseData responseData = new ResponseData();
 
+        System.out.println(boardPostUpdateReqDTO);
         try {
             Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -291,9 +293,6 @@ public class BoardController {
     public ResponseEntity<ResponseData> readBoardComments(@RequestParam String boardIdx,
                                                    @RequestHeader("Authorization") String token) {
         ResponseData responseData = new ResponseData();
-
-        Long longBoardIdx = Long.parseLong(boardIdx);
-
         try {
             String actualToken = token.replace("Bearer ", "");
 
@@ -301,6 +300,9 @@ public class BoardController {
                 System.err.println("권한 검증 실패");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
+
+            Long longBoardIdx = Long.parseLong(boardIdx);
+            System.out.println(longBoardIdx);
 
             // 댓글 목록 가져오기
             List<BoardPostReadCommentsResDTO> commentList = boardService.readBoardComments(longBoardIdx);
@@ -386,6 +388,44 @@ public class BoardController {
 
             // 댓글 작성 성공했을 때
             responseData.setData(writeResult);
+            return ResponseEntity.ok(responseData);
+
+        }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+    }
+
+    // 게시글 좋아요 +1 올리기
+    @PostMapping("/upBoardPostLike")
+    public ResponseEntity<ResponseData> upBoardPostLike(@RequestBody BoardPostUpLikeReqDTO boardPostUpLikeReqDTO) {
+        ResponseData responseData = new ResponseData();
+
+        try {
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            boardPostUpLikeReqDTO.setUserIdx(userIdx);
+
+            Boolean AlreadyLiked = boardService.isLikedPost(boardPostUpLikeReqDTO);
+            System.out.println(AlreadyLiked);
+            // 좋아요를 누른지 판단
+            if(AlreadyLiked) {
+                // 좋아요가 있다면
+                return ResponseEntity.ok(responseData);
+            } else {
+                // 없다면 좋아요 +1
+                Integer upResult = boardService.upBoardPostLike(boardPostUpLikeReqDTO);
+            }
+
+
             return ResponseEntity.ok(responseData);
 
         }
