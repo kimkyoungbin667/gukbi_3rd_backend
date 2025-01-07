@@ -282,32 +282,34 @@ public class BoardController {
             Long userIdx = jwtUtil.getIdFromToken(token);
             boardWriteCommentDTO.setAuthorIdx(userIdx);
             boardWriteCommentDTO.setAuthorToken(null);
+
+            try {
+                // 댓글 작성
+                Integer writeResult = boardService.writeBoardComment(boardWriteCommentDTO);
+
+                // 업데이트 된게 없을 때
+                if (writeResult < 1) {
+                    responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+                    return ResponseEntity.ok(responseData);
+                }
+
+                // 댓글 작성 성공했을 때
+                responseData.setData(writeResult);
+                return ResponseEntity.ok(responseData);
+
+            }
+            // 서버 에러 발생 시
+            catch (Exception e) {
+                logger.error("Error : ", e);
+                responseData.setError(ErrorMessage.SERVER_ERROR);
+                return ResponseEntity.ok(responseData);
+            }
             
         } else {
             throw new RuntimeException("유효하지 않은 토큰 값입니다!");
         }
 
-        try {
-            // 댓글 작성
-            Integer writeResult = boardService.writeBoardComment(boardWriteCommentDTO);
 
-            // 업데이트 된게 없을 때
-            if (writeResult < 1) {
-                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
-                return ResponseEntity.ok(responseData);
-            }
-
-            // 댓글 작성 성공했을 때
-            responseData.setData(writeResult);
-            return ResponseEntity.ok(responseData);
-
-        }
-        // 서버 에러 발생 시
-        catch (Exception e) {
-            logger.error("Error : ", e);
-            responseData.setError(ErrorMessage.SERVER_ERROR);
-            return ResponseEntity.ok(responseData);
-        }
     }
 
     // 대댓글 작성하기
@@ -315,30 +317,48 @@ public class BoardController {
     public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardReplyReqDTO boardReplyDTO) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println(boardReplyDTO);
-        try {
-            // 대댓글 작성하기
-            Integer writeResult = boardService.writeBoardReply(boardReplyDTO);
+        // 토큰 값 추출
+        String token = boardReplyDTO.getAuthorToken();
+        token = token.replace("Bearer ", "");
 
-            System.out.println(writeResult);
 
-            // 업데이트 된게 없을 때
-            if (writeResult < 1) {
-                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+        // 토큰 검증
+        if (jwtUtil.validateToken(token)) {
+            Long userIdx = jwtUtil.getIdFromToken(token);
+            boardReplyDTO.setAuthorIdx(userIdx);
+            boardReplyDTO.setAuthorToken(null);
+
+            try {
+                // 대댓글 작성하기
+                Integer writeResult = boardService.writeBoardReply(boardReplyDTO);
+
+                System.out.println(writeResult);
+
+                // 업데이트 된게 없을 때
+                if (writeResult < 1) {
+                    responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+                    return ResponseEntity.ok(responseData);
+                }
+
+                // 댓글 작성 성공했을 때
+                responseData.setData(writeResult);
+                return ResponseEntity.ok(responseData);
+
+            }
+            // 서버 에러 발생 시
+            catch (Exception e) {
+                logger.error("Error : ", e);
+                responseData.setError(ErrorMessage.SERVER_ERROR);
                 return ResponseEntity.ok(responseData);
             }
 
-            // 댓글 작성 성공했을 때
-            responseData.setData(writeResult);
-            return ResponseEntity.ok(responseData);
+        } else {
+            throw new RuntimeException("유효하지 않은 토큰 값입니다!");
+        }
 
-        }
-        // 서버 에러 발생 시
-        catch (Exception e) {
-            logger.error("Error : ", e);
-            responseData.setError(ErrorMessage.SERVER_ERROR);
-            return ResponseEntity.ok(responseData);
-        }
+
+
+
     }
 
 }
