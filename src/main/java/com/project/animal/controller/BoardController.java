@@ -5,8 +5,10 @@ import com.project.animal.ResponseData.ErrorMessage;
 import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.board.*;
 import com.project.animal.dto.board.BoardListResponseDTO;
+import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.service.BoardService;
 import com.project.animal.service.BucketService;
+import com.project.animal.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import io.github.bucket4j.*;
 import org.slf4j.Logger;
@@ -39,6 +41,13 @@ public class BoardController {
 
     @Autowired
     private BucketService bucketService;
+
+    private JwtUtil jwtUtil;
+
+    public BoardController(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
 
     // 게시글 리스트 불러오기
     @GetMapping("/getBoardList")
@@ -264,11 +273,55 @@ public class BoardController {
     public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardWriteCommentDTO boardWriteCommentDTO) {
         ResponseData responseData = new ResponseData();
 
+        // 토큰 값 추출
+        String token = boardWriteCommentDTO.getAuthorToken();
+        token = token.replace("Bearer ", "");
+
+        // 토큰 검증
+        if (jwtUtil.validateToken(token)) {
+            Long userIdx = jwtUtil.getIdFromToken(token);
+            boardWriteCommentDTO.setAuthorIdx(userIdx);
+            boardWriteCommentDTO.setAuthorToken(null);
+            
+        } else {
+            throw new RuntimeException("유효하지 않은 토큰 값입니다!");
+        }
+
         try {
-            // 댓글 목록 가져오기
+            // 댓글 작성
             Integer writeResult = boardService.writeBoardComment(boardWriteCommentDTO);
 
+            // 업데이트 된게 없을 때
+            if (writeResult < 1) {
+                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+                return ResponseEntity.ok(responseData);
+            }
+
+            // 댓글 작성 성공했을 때
+            responseData.setData(writeResult);
+            return ResponseEntity.ok(responseData);
+
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+    }
+
+    // 대댓글 작성하기
+    @PostMapping("/writeBoardReply")
+    public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardReplyReqDTO boardReplyDTO) {
+        ResponseData responseData = new ResponseData();
+
+        System.out.println(boardReplyDTO);
+        try {
+            // 대댓글 작성하기
+            Integer writeResult = boardService.writeBoardReply(boardReplyDTO);
+
             System.out.println(writeResult);
+
             // 업데이트 된게 없을 때
             if (writeResult < 1) {
                 responseData.setError(ErrorMessage.BOARD_NOT_FOUND);

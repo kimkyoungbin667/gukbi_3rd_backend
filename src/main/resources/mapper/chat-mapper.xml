@@ -24,7 +24,7 @@
                 JOIN tb_user u1 ON cr.create_user_idx = u1.user_idx
                 JOIN tb_user u2 ON cr.invited_user_idx = u2.user_idx
         WHERE
-            cr.create_user_idx = #{userIdx}; -- create_user_idx가 userIdx인 경우만
+            cr.create_user_idx = #{userIdx} OR cr.invited_user_idx = #{userIdx}
 
     </select>
 
