@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +50,17 @@ public class BoardController {
         this.jwtUtil = jwtUtil;
     }
 
+/*
+    // 토큰 값 추출
+    String token = boardWriteCommentDTO.getAuthorToken();
+    token = token.replace("Bearer ", "");
+
+    // 토큰 검증
+        if (jwtUtil.validateToken(token)) {
+
+    } else {
+        throw new RuntimeException("유효하지 않은 토큰 값입니다!");
+    } */
 
     // 게시글 리스트 불러오기
     @GetMapping("/getBoardList")
@@ -56,6 +69,8 @@ public class BoardController {
         BoardResponseData responseData = new BoardResponseData();
 
         try {
+           Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
             // 유효하지 않은 에러 메세지 일 때
             if (page < 1) {
                 responseData.setError(ErrorMessage.INVALID_PAGE_VALUE);
@@ -82,12 +97,19 @@ public class BoardController {
             return ResponseEntity.ok(responseData);
 
         }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
         // 서버 에러 발생 시
         catch (Exception e) {
             logger.error("Error : ", e);
             responseData.setError(ErrorMessage.SERVER_ERROR);
             return ResponseEntity.ok(responseData);
         }
+
+
     }
 
     // 게시글 상세 보기
@@ -96,6 +118,8 @@ public class BoardController {
     public ResponseEntity<ResponseData> getBoardDetail(@RequestParam long boardIdx) {
 
         ResponseData responseData = new ResponseData();
+        Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(userIdx);
 
         try {
             BoardDetailResponseDTO boardDetailResponseDTO = boardService.getBoardDetail(boardIdx);
@@ -105,7 +129,6 @@ public class BoardController {
                 responseData.setData(boardDetailResponseDTO);
                 return ResponseEntity.ok(responseData);
             }
-
             // 해당 데이터가 없을 시
             responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
             return ResponseEntity.ok(responseData);
@@ -117,6 +140,7 @@ public class BoardController {
             responseData.setError(ErrorMessage.SERVER_ERROR);
             return ResponseEntity.ok(responseData);
         }
+
     }
     
     // 게시글 삭제하기
