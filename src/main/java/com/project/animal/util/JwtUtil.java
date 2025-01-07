@@ -10,8 +10,9 @@ public class JwtUtil {
 
     private final String SECRET_KEY = "RA4A7xk3zhWx3czBZPCtZpbalul7W4uZ1p3NzTjAC9kFbHX3CmRtL7";
     private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1시간
+    private final long REFRESH_EXPIRATION_TIME = 1000L * 60 * 60 * 24 * 7; // 7일
 
-    // 토큰 생성: ID와 이메일을 포함
+    // 액세스 토큰 생성
     public String generateToken(Long id, String email) {
         return Jwts.builder()
                 .setSubject(String.valueOf(id)) // ID를 Subject에 저장
@@ -22,12 +23,26 @@ public class JwtUtil {
                 .compact();
     }
 
+    // 리프레시 토큰 생성
+    public String generateRefreshToken(Long id) {
+        return Jwts.builder()
+                .setSubject(String.valueOf(id)) // ID를 Subject에 저장
+                .setIssuedAt(new Date())       // 토큰 생성 시간
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME)) // 만료 시간
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY) // 서명
+                .compact();
+    }
+
     // 토큰 검증
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expired: " + e.getMessage());
+            return false;
         } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("Invalid token: " + e.getMessage());
             return false;
         }
     }
