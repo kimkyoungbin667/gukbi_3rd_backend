@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .cors().configurationSource(corsConfigurationSource()) // CORS 설정 추가
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/**", "/uploads/**").permitAll() // 허용 경로
+                .antMatchers("/api/**").permitAll() // 허용 경로
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

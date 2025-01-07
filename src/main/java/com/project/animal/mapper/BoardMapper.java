@@ -39,4 +39,7 @@ public interface BoardMapper {
 
     // 댓글 작성하기
     Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO);
+
+    // 대댓글 작성하기
+    Integer writeBoardReply(BoardReplyReqDTO boardReplyDTO);
 }

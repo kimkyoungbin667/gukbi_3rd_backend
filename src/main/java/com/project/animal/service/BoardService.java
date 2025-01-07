@@ -49,4 +49,9 @@ public class BoardService {
     public Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO) {
         return boardMapper.writeBoardComment(boardWriteCommentDTO);
     }
+
+    // 대댓글 작성하기
+    public Integer writeBoardReply(BoardReplyReqDTO boardReplyDTO) {
+        return boardMapper.writeBoardReply(boardReplyDTO);
+    }
 }
