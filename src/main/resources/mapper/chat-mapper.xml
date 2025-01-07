@@ -2,37 +2,37 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.project.animal.mapper.ChatMapper">
-    <select id="getChatRoomList" resultType="com.project.animal.dto.chat.ChatRoomDTO" parameterType="Long">
+
+    <select id="getChatRoomList" resultType="ChatRoomDTO" parameterType="Long">
         SELECT
             cr.room_idx, -- 채팅방 ID
             CASE
-                WHEN cr.user1_idx = #{userIdx} THEN cr.user2_idx -- 상대방의 ID
-                ELSE cr.user1_idx
+                WHEN cr.create_user_idx = #{userIdx} THEN cr.invited_user_idx -- 상대방의 ID
+                ELSE cr.create_user_idx
                 END AS opponent_idx, -- 상대방 ID
             CASE
-                WHEN cr.user1_idx = #{userIdx} THEN u2.user_name -- 상대방 이름
+                WHEN cr.create_user_idx = #{userIdx} THEN u2.user_name -- 상대방 이름
                 ELSE u1.user_name
                 END AS opponent_name, -- 상대방 이름
             CASE
-                WHEN cr.user1_idx = #{userIdx} THEN u2.user_profile_url -- 상대방 프로필 URL
+                WHEN cr.create_user_idx = #{userIdx} THEN u2.user_profile_url -- 상대방 프로필 URL
                 ELSE u1.user_profile_url
                 END AS opponent_profile_url, -- 상대방 프로필 URL
             cr.created_at -- 채팅방 생성 시간
         FROM
             tb_chatRoomList cr
-                JOIN
-            tb_user u1 ON cr.user1_idx = u1.user_idx
-                JOIN
-            tb_user u2 ON cr.user2_idx = u2.user_idx
+                JOIN tb_user u1 ON cr.create_user_idx = u1.user_idx
+                JOIN tb_user u2 ON cr.invited_user_idx = u2.user_idx
         WHERE
-            cr.user1_idx = #{userIdx} OR cr.user2_idx = #{userIdx}
+            cr.create_user_idx = #{userIdx}; -- create_user_idx가 userIdx인 경우만
+
     </select>
 
-    <select id="getChatRoomDetail" resultType="com.project.animal.dto.chat.ChatRoomDetailDTO" parameterType="Long">
+    <select id="getChatRoomDetail" resultType="ChatRoomDetailDTO" parameterType="Long">
         SELECT * FROM tb_chatRoomDetail WHERE room_idx = #{roomIdx}
     </select>
 
-    <insert id="sendMessage" parameterType="com.project.animal.dto.chat.SendMessageDTO">
+    <insert id="sendMessage" parameterType="SendMessageDTO">
         INSERT INTO tb_chatRoomDetail(sender_idx, message, sent_at, room_idx)
         VALUES(
                   #{senderIdx},
