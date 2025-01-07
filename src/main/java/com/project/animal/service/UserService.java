@@ -13,6 +13,7 @@ import com.project.animal.mapper.UserMapper;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -38,29 +39,43 @@ public class UserService {
 
 
     // 로그인
-    public String login(LoginDTO loginDTO) {
+    public Map<String, String> login(LoginDTO loginDTO) {
         User user = userMapper.findByEmail(loginDTO.getEmail());
-        if (user == null) {
-            System.out.println("User not found for email: " + loginDTO.getEmail());
+        if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
-        System.out.println("User found: ID=" + user.getUserIdx() + ", Email=" + user.getUserEmail());
+        // 액세스 토큰 생성
+        String accessToken = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
 
-        if (passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
-            System.out.println("Password match success");
-        } else {
-            System.out.println("Password match failed");
-            System.out.println("Raw password: " + loginDTO.getPassword());
-            System.out.println("Stored password: " + user.getUserPassword());
-        }
-        String token = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
-        System.out.println("Generated token: " + token);
+        // 리프레시 토큰 생성
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUserIdx());
 
-        return token;
+        // 리프레시 토큰 저장
+        userMapper.saveRefreshToken(user.getUserIdx(), refreshToken);
+
+        // 클라이언트로 반환할 토큰 맵 생성
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
+
+        return tokens;
     }
 
-    public User kakaoLogin(String accessToken) {
+    // 리프레시 토큰 검증 및 액세스 토큰 재발행
+    public String refreshAccessToken(String refreshToken) {
+        Long userId = jwtUtil.getIdFromToken(refreshToken);
+        String storedRefreshToken = userMapper.findRefreshTokenByUserId(userId);
+
+        if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        return jwtUtil.generateToken(userId, jwtUtil.getEmailFromToken(refreshToken));
+    }
+
+    //카카오 로그인
+    public Map<String, String> kakaoLogin(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
         String kakaoUserInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
@@ -102,12 +117,49 @@ public class UserService {
             userMapper.registerUser(registerDTO);
         }
 
-        return user;
+        // 액세스 토큰 및 리프레시 토큰 생성
+        String newAccessToken = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUserIdx());
+
+        // 리프레시 토큰 저장
+        userMapper.saveRefreshToken(user.getUserIdx(), refreshToken);
+
+        // 반환할 토큰 맵 생성
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", newAccessToken);
+        tokens.put("refreshToken", refreshToken);
+
+        return tokens;
     }
+
+
 
     // 사용자 정보
     public User findUserProfileById(Long userId) {
         return userMapper.findUserById(userId);
     }
+
+    // 처음 프로필 업데이트
+    public void updateUserProfile(Long userId, String userNickname, String userProfileUrl) {
+        User user = userMapper.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        user.setUserNickname(userNickname);
+        user.setUserProfileUrl(userProfileUrl);
+
+        userMapper.updateUserProfile(user);
+    }
+
+    // 닉네임 찾기
+    public String findNicknameById(Long userId) {
+        User user = userMapper.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        return user.getUserNickname();
+    }
+
 
 }
