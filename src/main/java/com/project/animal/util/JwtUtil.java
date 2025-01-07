@@ -27,10 +27,16 @@ public class JwtUtil {
         try {
             Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+        } catch (ExpiredJwtException e) {
+            System.out.println("토큰 만료: " + e.getMessage());
+        } catch (SignatureException e) {
+            System.out.println("잘못된 서명: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("기타 오류: " + e.getMessage());
         }
+        return false;
     }
+
 
     // ID 추출 (Subject에 저장된 ID 반환)
     public Long getIdFromToken(String token) {

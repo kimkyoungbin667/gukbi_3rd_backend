@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/**").permitAll() // 허용 경로
+                .antMatchers("/ws/**").permitAll() // 허용 경로
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
