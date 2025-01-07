@@ -33,11 +33,11 @@ public interface BoardMapper {
     Integer increaseView(@Param("boardIdx") long boardIdx);
 
     // 댓글, 대댓글 불러오기
-    List<BoardCommentDTO> getBoardComment(Long longBoardIdx);
+    List<BoardPostReadCommentsResDTO> readBoardComments(Long longBoardIdx);
 
     // 댓글 작성하기
-    Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO);
+    Integer createBoardComment(BoardPostCreateCommentReqDTO boardPostCreateCommentDTO);
 
     // 대댓글 작성하기
-    Integer writeBoardReply(BoardReplyReqDTO boardReplyDTO);
+    Integer createBoardReply(BoardPostCreateReplyReqDTO boardReplyDTO);
 }
