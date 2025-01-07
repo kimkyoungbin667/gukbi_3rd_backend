@@ -23,7 +23,7 @@ public class BoardService {
     public Integer createBoardPost(BoardPostCreateReqDTO boardPostCreateReqDTO) {return boardMapper.createBoardPost(boardPostCreateReqDTO);}
 
     // 게시글 상세보기
-    public BoardPostReadResDTO readBoardPost(long boardIdx) {return boardMapper.readBoardPost(boardIdx);}
+    public BoardPostReadResDTO readBoardPost(BoardPostReadReqDTO boardPostReadReqDTO) {return boardMapper.readBoardPost(boardPostReadReqDTO);}
 
     // 게시글 수정하기
     public Integer updateBoardPost(BoardPostUpdateReqDTO boardPostUpdateReqDTO) {return boardMapper.updateBoardPost(boardPostUpdateReqDTO);}
@@ -41,12 +41,14 @@ public class BoardService {
     public List<BoardPostReadCommentsResDTO> readBoardComments(Long longBoardIdx) {return boardMapper.readBoardComments(longBoardIdx);}
 
     // 댓글 작성하기
-    public Integer createBoardComment(BoardPostCreateCommentReqDTO boardPostCreateCommentReqDTO) {
-        return boardMapper.createBoardComment(boardPostCreateCommentReqDTO);
-    }
+    public Integer createBoardComment(BoardPostCreateCommentReqDTO boardPostCreateCommentReqDTO) {return boardMapper.createBoardComment(boardPostCreateCommentReqDTO);}
 
     // 대댓글 작성하기
-    public Integer createBoardReply(BoardPostCreateReplyReqDTO boardPostCreateReplyReqDTO) {
-        return boardMapper.createBoardReply(boardPostCreateReplyReqDTO);
-    }
+    public Integer createBoardReply(BoardPostCreateReplyReqDTO boardPostCreateReplyReqDTO) {return boardMapper.createBoardReply(boardPostCreateReplyReqDTO);}
+
+    // 좋아요를 누른지 판단
+    public Boolean isLikedPost(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO) {return boardMapper.isLikedPost(boardPostUpLikeReqDTO);}
+
+    // 좋아요 +1 하기
+    public Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO) {return boardMapper.upBoardPostLike(boardPostUpLikeReqDTO);}
 }
