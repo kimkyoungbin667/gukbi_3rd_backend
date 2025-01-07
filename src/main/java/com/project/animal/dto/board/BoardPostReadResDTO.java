@@ -2,6 +2,7 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
+// 게시글 상세보기 응답에 대한 DTO
 @Data
 public class BoardPostReadResDTO {
     private Long boardIdx;              // 게시글 인덱스

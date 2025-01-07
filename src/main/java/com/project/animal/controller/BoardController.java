@@ -202,7 +202,6 @@ public class BoardController {
         try {
 
             String actualToken = token.replace("Bearer ", "");
-            System.out.println(actualToken);
 
             if (!jwtUtil.validateToken(actualToken)) {
                 System.err.println("권한 검증 실패");
@@ -236,13 +235,21 @@ public class BoardController {
 
     // 게시글 조회수 올리기
     @PostMapping("/increaseView")
-    public ResponseEntity<ResponseData> increaseView(@RequestBody HashMap<String, Object> requestData, HttpServletRequest request) {
+    public ResponseEntity<ResponseData> increaseView(@RequestBody HashMap<String, Object> requestData, HttpServletRequest request,
+                                                     @RequestHeader("Authorization") String token) {
 
         ResponseData responseData = new ResponseData();
         Long boardIdx = Long.parseLong(requestData.get("boardIdx").toString());
 
         try {
-            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            String actualToken = token.replace("Bearer ", "");
+
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.err.println("권한 검증 실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+
             String userKey = request.getRemoteAddr(); // 사용자별 고유 키
             Bucket bucket = bucketService.getBucketForUser(userKey);
 
@@ -279,19 +286,24 @@ public class BoardController {
     }
 
 
-
     // 댓글, 대댓글 불러오기
-    @GetMapping("/getBoardComment")
-    public ResponseEntity<ResponseData> getComment(@RequestParam String boardIdx) {
+    @GetMapping("/readBoardComments")
+    public ResponseEntity<ResponseData> readBoardComments(@RequestParam String boardIdx,
+                                                   @RequestHeader("Authorization") String token) {
         ResponseData responseData = new ResponseData();
 
         Long longBoardIdx = Long.parseLong(boardIdx);
 
         try {
-            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String actualToken = token.replace("Bearer ", "");
+
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.err.println("권한 검증 실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
 
             // 댓글 목록 가져오기
-            List<BoardCommentDTO> commentList = boardService.getBoardComment(longBoardIdx);
+            List<BoardPostReadCommentsResDTO> commentList = boardService.readBoardComments(longBoardIdx);
 
             // 조회된 댓글이 없을 때
             if (commentList.isEmpty()) {
@@ -318,16 +330,16 @@ public class BoardController {
     }
 
     // 댓글 작성하기
-    @PostMapping("/writeBoardComment")
-    public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardWriteCommentDTO boardWriteCommentDTO) {
+    @PostMapping("/createBoardComment")
+    public ResponseEntity<ResponseData> createBoardComment(@RequestBody BoardPostCreateCommentReqDTO boardPostCreateCommentReqDTO) {
         ResponseData responseData = new ResponseData();
 
-
+        System.out.println(boardPostCreateCommentReqDTO);
             try {
                 Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
                 // 댓글 작성
-                Integer writeResult = boardService.writeBoardComment(boardWriteCommentDTO);
+                Integer writeResult = boardService.createBoardComment(boardPostCreateCommentReqDTO);
 
                 // 업데이트 된게 없을 때
                 if (writeResult < 1) {
@@ -354,47 +366,50 @@ public class BoardController {
             
         }
 
-    }
-
-    /*// 대댓글 작성하기
-    @PostMapping("/writeBoardReply")
-    public ResponseEntity<ResponseData> writeBoardComment(@RequestBody BoardReplyReqDTO boardReplyDTO) {
+    // 대댓글 작성하기
+    @PostMapping("/createBoardReply")
+    public ResponseEntity<ResponseData> createBoardReply(@RequestBody BoardPostCreateReplyReqDTO boardPostCreateReplyReqDTO) {
         ResponseData responseData = new ResponseData();
 
-            try {
-                Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal()
-                // 대댓글 작성하기
-                Integer writeResult = boardService.writeBoardReply(boardReplyDTO);
+        try {
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-                System.out.println(writeResult);
+            Integer writeResult = boardService.createBoardReply(boardPostCreateReplyReqDTO);
 
-                // 업데이트 된게 없을 때
-                if (writeResult < 1) {
-                    responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
-                    return ResponseEntity.ok(responseData);
-                }
+            System.out.println(writeResult);
 
-                // 댓글 작성 성공했을 때
-                responseData.setData(writeResult);
-                return ResponseEntity.ok(responseData);
-
-            }
-            // 토큰 검증 실패
-            catch (ClassCastException e) {
-                System.err.println("권한 검증 실패: " + e.getMessage());
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
-            }
-            // 서버 에러 발생 시
-            catch (Exception e) {
-                logger.error("Error : ", e);
-                responseData.setError(ErrorMessage.SERVER_ERROR);
+            // 업데이트 된게 없을 때
+            if (writeResult < 1) {
+                responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
                 return ResponseEntity.ok(responseData);
             }
+
+            // 댓글 작성 성공했을 때
+            responseData.setData(writeResult);
+            return ResponseEntity.ok(responseData);
 
         }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+
+    }
 
 
-    }*/
+}
+
+
+
+
+
 
 
 

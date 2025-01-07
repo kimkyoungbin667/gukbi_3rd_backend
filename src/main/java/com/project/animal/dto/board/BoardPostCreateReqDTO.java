@@ -2,7 +2,7 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
-// 게시글 작성 요청을 처리하기 위한 DTO
+// 게시글 작성 요청에 대한 DTO
 @Data
 public class BoardPostCreateReqDTO {
     

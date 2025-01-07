@@ -2,6 +2,7 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
+// 게시글 전체 조회 응답을 위한 DTO
 @Data
 public class BoardPostListResDTO {
 

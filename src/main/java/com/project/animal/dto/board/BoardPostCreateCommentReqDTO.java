@@ -2,8 +2,9 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
+// 게시글 댓글 작성 요청을 위한 DTO
 @Data
-public class BoardWriteCommentDTO {
+public class BoardPostCreateCommentReqDTO {
 
     private Long boardIdx;      // 게시글 idx
     private String authorToken;   // 작성자 token
