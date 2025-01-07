@@ -94,5 +94,14 @@
         VALUES(#{boardIdx}, #{authorIdx}, #{comment})
     </insert>
 
+    <insert id="writeBoardReply" parameterType="boardReplyReqDTO">
+        INSERT INTO tb_comment(board_idx, author_idx, content, parent_idx)
+        VALUES(
+                  #{boardIdx},
+                  #{authorIdx},
+                  #{comment},
+                  #{parentIdx}
+              )
+    </insert>
 
 </mapper>

@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class SendMessageDTO {
-    private Long roomIdx;          // 채팅방 ID
-    private Long senderIdx;      // 보낸 사람 ID
+    private Long roomIdx;          // 채팅방 idx
+    private String senderToken;      // 보낸 사람 Token
+    private Long senderIdx;            // 보낸 사람 idx
     private String message;       // 메시지 내용
     private LocalDateTime sentAt; // 클라이언트의 ISO 8601 문자열을 자동 변환
 }
