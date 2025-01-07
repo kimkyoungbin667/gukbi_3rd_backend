@@ -2,11 +2,9 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+// 게시글 댓글 조회 요청에 대한 DTO
 @Data
-public class BoardCommentDTO {
+public class BoardPostReadCommentsResDTO {
 
     private Long commentIdx;       // 댓글 고유 Idx
     private String content;        // 댓글 내용
