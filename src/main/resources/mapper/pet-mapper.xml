@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.project.animal.mapper.PetMapper">
+
+    <insert id="insertPetInfo">
+        INSERT INTO tb_pet_info (
+            dog_reg_no, rfid_cd, dog_name, sex, kind_name, neuter_status,
+            organization_name, office_tel, approval_status, created_at, updated_at
+        )
+        VALUES (
+                   #{dogRegNo}, #{rfidCd}, #{dogNm}, #{sexNm}, #{kindNm}, #{neuterYn},
+                   #{orgNm}, #{officeTel}, #{aprGbNm}, NOW(), NOW()
+               )
+    </insert>
+
+</mapper>

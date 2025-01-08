@@ -132,7 +132,10 @@ public class UserService {
         return tokens;
     }
 
-
+    public void logout(Long userId) {
+        // 리프레시 토큰 삭제
+        userMapper.deleteRefreshToken(userId);
+    }
 
     // 사용자 정보
     public User findUserProfileById(Long userId) {
