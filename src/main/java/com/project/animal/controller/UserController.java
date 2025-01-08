@@ -6,6 +6,7 @@ import com.project.animal.dto.user.UserDTO;
 import com.project.animal.model.User;
 import com.project.animal.service.FileService;
 import com.project.animal.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -88,6 +89,34 @@ public class UserController {
                     .body(Map.of("message", "카카오 로그인 실패: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String token) {
+        try {
+            if (token == null) {
+                System.out.println("Authorization 헤더가 없습니다.");
+                return ResponseEntity.badRequest().body("Authorization 헤더가 없습니다.");
+            }
+
+            System.out.println("Authorization 헤더: " + token);
+
+            String actualToken = token.replace("Bearer ", "");
+            Long userId = jwtUtil.getIdFromToken(actualToken);
+            System.out.println("추출된 UserID: " + userId);
+
+            userService.logout(userId);
+            return ResponseEntity.ok("로그아웃 완료");
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT 만료 예외 발생: " + e.getMessage());
+            return ResponseEntity.ok("JWT 만료: 로그아웃 처리 완료");
+        } catch (Exception e) {
+            System.out.println("로그아웃 처리 중 예외 발생: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "로그아웃 처리 실패", "message", e.getMessage()));
+        }
+    }
+
+
 
 
     //사용자 정보 불러오기
