@@ -11,4 +11,14 @@ public interface UserMapper {
     void registerUser(RegisterDTO registerDTO);
     User findByEmail(String userEmail);
     User findUserById(Long userId);
+    void updateUserProfile(User user);
+    // 리프레시 토큰 저장
+    void saveRefreshToken(@Param("userId") Long userId,
+                          @Param("refreshToken") String refreshToken);
+
+    // 리프레시 토큰 조회
+    String findRefreshTokenByUserId(@Param("userId") Long userId);
+
+    // 리프레시 토큰 삭제
+    void deleteRefreshToken(@Param("userId") Long userId);
 }
