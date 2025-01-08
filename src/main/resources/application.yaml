@@ -22,6 +22,12 @@ spring:
           starttls:
             enable: true
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 jwt:
   secret: RA4A7xk3zhWx3czBZPCtZpbalul7W4uZ1p3NzTjAC9kFbHX3CmRtL7
 
@@ -31,3 +37,4 @@ mybatis:
   config-location: classpath:mybatis-config.xml
   #MybatisAlias
   type-aliases-package: com.project.animal.dto
+

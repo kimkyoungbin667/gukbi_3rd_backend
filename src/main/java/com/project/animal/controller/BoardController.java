@@ -13,12 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -88,37 +91,51 @@ public class BoardController {
     }
 
     // 게시글 작성하기
-    @PostMapping("/createBoardPost")
-    public ResponseEntity<ResponseData> createBoardPost(@RequestBody BoardPostCreateReqDTO boardPostCreateReqDTO) {
+    @PostMapping(value = "/createBoardPost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData> createBoardPost(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+
         ResponseData responseData = new ResponseData();
 
         try {
+            // 사용자 인증 정보 가져오기
             Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+            // 게시글 생성 DTO 설정
+            BoardPostCreateReqDTO boardPostCreateReqDTO = new BoardPostCreateReqDTO();
+            boardPostCreateReqDTO.setTitle(title);
+            boardPostCreateReqDTO.setContent(content);
             boardPostCreateReqDTO.setAuthorIdx(userIdx);
 
-            Integer writeResult = boardService.createBoardPost(boardPostCreateReqDTO);
+            // 이미지 파일 처리
+            if (imageFiles != null && !imageFiles.isEmpty()) {
 
-            // 게시글 작성 성공 시
-            if (writeResult >= 1) {
-                return ResponseEntity.ok(responseData);
+                List<String> savedImagePaths = new ArrayList<>();
+                for (MultipartFile file : imageFiles) {
+                    String savedPath = boardService.saveImage(file); // 이미지 저장 서비스 호출
+                    savedImagePaths.add(savedPath);
+                }
+                boardPostCreateReqDTO.setImageFiles(savedImagePaths); // DTO에 이미지 경로 추가
             }
 
-            // 해당 데이터가 없을 시
-            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
-            return ResponseEntity.ok(responseData);
+            // 게시글 작성 서비스 호출
+            Integer writeResult = boardService.createBoardPost(boardPostCreateReqDTO);
 
-        }
-        // 토큰 검증 실패
-        catch (ClassCastException e) {
-            System.err.println("권한 검증 실패: " + e.getMessage());
+            if (writeResult >= 1) {
+                return ResponseEntity.ok(responseData); // 성공 응답
+            }
+
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+
+        } catch (ClassCastException e) {
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
-        }
-        // 서버 에러 발생 시
-        catch (Exception e) {
-            logger.error("Error : ", e);
+        } catch (Exception e) {
             responseData.setError(ErrorMessage.SERVER_ERROR);
-            return ResponseEntity.ok(responseData);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
     }
 
@@ -135,6 +152,8 @@ public class BoardController {
 
             System.out.println(boardPostReadReqDTO);
             BoardPostReadResDTO boardPostReadResDTO = boardService.readBoardPost(boardPostReadReqDTO);
+
+            System.out.println(boardPostReadResDTO);
 
             // 조회한 게시글 내용이 있을 때
             if (boardPostReadResDTO.getContent() != null) {
@@ -414,19 +433,20 @@ public class BoardController {
 
             boardPostUpLikeReqDTO.setUserIdx(userIdx);
 
+            System.out.println(boardPostUpLikeReqDTO);
             Boolean AlreadyLiked = boardService.isLikedPost(boardPostUpLikeReqDTO);
-            System.out.println(AlreadyLiked);
+
             // 좋아요를 누른지 판단
             if(AlreadyLiked) {
-                // 좋아요가 있다면
+
+                // 좋아요가 있다면 좋아요 -1
+                Integer downResult = boardService.downBoardPostLike(boardPostUpLikeReqDTO);
                 return ResponseEntity.ok(responseData);
             } else {
-                // 없다면 좋아요 +1
+                // 좋아요가 없다면 좋아요 +1
                 Integer upResult = boardService.upBoardPostLike(boardPostUpLikeReqDTO);
+                return ResponseEntity.ok(responseData);
             }
-
-
-            return ResponseEntity.ok(responseData);
 
         }
         // 토큰 검증 실패
@@ -443,6 +463,36 @@ public class BoardController {
 
     }
 
+    // 게시글 파일 업로드하기
+    @PostMapping("/uploadFile")
+    public ResponseEntity<ResponseData> uploadFile(@RequestParam Long boardIdx,
+                                                   @RequestPart List<MultipartFile> files) {
+        ResponseData responseData = new ResponseData();
+
+        System.out.println(boardIdx);
+        System.out.println(files);
+
+        //boardImageService.uploadImages(boardIdx, files);
+
+        System.out.println(files);
+        try {
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            return ResponseEntity.ok(responseData);
+
+        }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+    }
 
 }
 

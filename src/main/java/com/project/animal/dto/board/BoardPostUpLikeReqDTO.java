@@ -2,7 +2,7 @@ package com.project.animal.dto.board;
 
 import lombok.Data;
 
-// 좋아요 +1의 요청에 대한 DTO
+// 좋아요 기능 요청에 대한 DTO
 @Data
 public class BoardPostUpLikeReqDTO {
 
