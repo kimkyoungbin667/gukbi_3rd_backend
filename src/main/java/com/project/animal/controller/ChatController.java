@@ -34,6 +34,7 @@ public class ChatController {
     public ResponseEntity<ResponseData> getChatRoomList(@RequestHeader("Authorization") String token) {
         ResponseData responseData = new ResponseData();
 
+        System.out.println(token);
         // 토큰 값 추출
         token = token.replace("Bearer ", "");
 
@@ -64,7 +65,6 @@ public class ChatController {
         } else {
             throw new RuntimeException("유효하지 않은 토큰 값입니다!");
         }
-
     }
 
     // 채팅방 내용 불러오기 불러오기
