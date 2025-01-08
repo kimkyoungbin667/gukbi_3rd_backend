@@ -414,19 +414,20 @@ public class BoardController {
 
             boardPostUpLikeReqDTO.setUserIdx(userIdx);
 
+            System.out.println(boardPostUpLikeReqDTO);
             Boolean AlreadyLiked = boardService.isLikedPost(boardPostUpLikeReqDTO);
-            System.out.println(AlreadyLiked);
+
             // 좋아요를 누른지 판단
             if(AlreadyLiked) {
-                // 좋아요가 있다면
+
+                // 좋아요가 있다면 좋아요 -1
+                Integer downResult = boardService.downBoardPostLike(boardPostUpLikeReqDTO);
                 return ResponseEntity.ok(responseData);
             } else {
-                // 없다면 좋아요 +1
+                // 좋아요가 없다면 좋아요 +1
                 Integer upResult = boardService.upBoardPostLike(boardPostUpLikeReqDTO);
+                return ResponseEntity.ok(responseData);
             }
-
-
-            return ResponseEntity.ok(responseData);
 
         }
         // 토큰 검증 실패
