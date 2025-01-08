@@ -25,9 +25,46 @@
             user_email,
             user_birth,
             user_password,
-            user_profile_url
+            user_profile_url,
+            social_type -- 소셜 타입 추가
         FROM tb_user
         WHERE user_idx = #{userId}
     </select>
+
+
+    <update id="updateUserProfile" parameterType="com.project.animal.model.User">
+        UPDATE tb_user
+        SET
+            user_nickname = #{userNickname},
+            user_profile_url = #{userProfileUrl}
+        WHERE user_idx = #{userIdx}
+    </update>
+
+    <select id="findNicknameById" resultType="String">
+        SELECT user_nickname
+        FROM tb_user
+        WHERE user_idx = #{userId}
+    </select>
+
+    <insert id="saveRefreshToken">
+        INSERT INTO tb_refresh_token (user_id, refresh_token, expires_at)
+        VALUES (#{userId}, #{refreshToken}, NOW() + INTERVAL 7 DAY)
+            ON DUPLICATE KEY UPDATE
+                                 refresh_token = #{refreshToken},
+                                 expires_at = NOW() + INTERVAL 7 DAY;
+    </insert>
+
+    <select id="findRefreshTokenByUserId" resultType="String">
+        SELECT refresh_token
+        FROM tb_refresh_token
+        WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteRefreshToken">
+        DELETE FROM tb_refresh_token
+        WHERE user_id = #{userId}
+    </delete>
+
+
 
 </mapper>
