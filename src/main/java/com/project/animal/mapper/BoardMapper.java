@@ -46,4 +46,7 @@ public interface BoardMapper {
 
     // 좋아요 +1 하기
     Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 좋아요 -1 하기
+    Integer downBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
 }

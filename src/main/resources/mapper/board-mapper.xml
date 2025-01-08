@@ -144,6 +144,12 @@
         WHERE user_idx = #{userIdx} AND board_idx = #{boardIdx}
     </select>
 
+    <delete id="downBoardPostLike" parameterType="boardPostUpLikeReqDTO">
+        DELETE FROM tb_like
+        WHERE user_idx = #{userIdx} AND board_idx = #{boardIdx}
+
+    </delete>
+
     <insert id="upBoardPostLike" parameterType="boardPostUpLikeReqDTO">
         INSERT INTO tb_like(user_idx, board_idx)
         VALUES(#{userIdx}, #{boardIdx})

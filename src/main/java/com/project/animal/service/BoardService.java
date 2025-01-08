@@ -51,4 +51,7 @@ public class BoardService {
 
     // 좋아요 +1 하기
     public Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO) {return boardMapper.upBoardPostLike(boardPostUpLikeReqDTO);}
+
+    // 좋아요 -1 하기
+    public Integer downBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO) {return boardMapper.downBoardPostLike(boardPostUpLikeReqDTO);}
 }
