@@ -1,42 +1,56 @@
 package com.project.animal.mapper;
 
-import com.project.animal.ResponseData.BoardResponseData;
 import com.project.animal.dto.board.*;
-import com.project.animal.dto.chat.ChatRoomDTO;
-import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface BoardMapper {
 
     // 게시글 목록 불러오기
-    List<BoardListResponseDTO> getBoardList(@Param("limit") int limit, @Param("offset") int offset);
+    List<BoardPostListResDTO> getBoardList(@Param("limit") int limit, @Param("offset") int offset);
 
     // 게시글 수 불러오기
     Integer getBoardListCount();
 
+    // 게시글 작성하기
+    Integer createBoardPost(BoardPostCreateReqDTO boardPostCreateReqDTO);
+
+    // 게시글 이미지 하나씩 저장
+    Integer insertBoardImage(@Param("boardIdx") Long boardIdx, @Param("imagePath") String imagePath);
+
     // 게시글 상세보기
-    BoardDetailResponseDTO getBoardDetail(@Param("boardIdx") long boardIdx);
+    BoardPostReadResDTO readBoardPost(BoardPostReadReqDTO boardPostReadReqDTO);
+
+    // 게시글 수정하기
+    Integer updateBoardPost(BoardPostUpdateReqDTO boardPostUpdateReqDTO);
 
     // 게시글 삭제하기
-    Integer deleteBoard(BoardIndexResponseDTO boardIndexResponseDTO);
+    Integer deleteBoardPost(BoardPostDeleteReqDTO boardPostDeleteReqDTO);
+
+
 
     // 조회수 올리기
     Integer increaseView(@Param("boardIdx") long boardIdx);
 
-    // 게시글 수정하기
-    Integer saveEditBoard(BoardEditResponseDTO boardEditResponseDTO);
-
-    // 게시글 작성하기
-    Integer writeBoard(BoardWriteResponseDTO boardWriteResponseDTO);
-
     // 댓글, 대댓글 불러오기
-    List<BoardCommentDTO> getBoardComment(Long longBoardIdx);
+    List<BoardPostReadCommentsResDTO> readBoardComments(Long longBoardIdx);
 
     // 댓글 작성하기
-    Integer writeBoardComment(BoardWriteCommentDTO boardWriteCommentDTO);
+    Integer createBoardComment(BoardPostCreateCommentReqDTO boardPostCreateCommentDTO);
+
+    // 대댓글 작성하기
+    Integer createBoardReply(BoardPostCreateReplyReqDTO boardReplyDTO);
+
+    // 좋아요를 누른지 판단
+    Boolean isLikedPost(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 좋아요 +1 하기
+    Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 좋아요 -1 하기
+    Integer downBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
 }

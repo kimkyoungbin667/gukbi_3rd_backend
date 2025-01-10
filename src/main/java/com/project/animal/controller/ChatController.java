@@ -4,6 +4,7 @@ import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import com.project.animal.service.ChatService;
+import com.project.animal.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +22,27 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
+    private JwtUtil jwtUtil;
+
+    public ChatController(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     // 채팅방 목록 불러오기
     @GetMapping("/getChatRoomList")
     @ResponseBody
-    public ResponseEntity<ResponseData> getChatRoomList(@RequestParam(value = "userIdx") Long userIdx) {
+    public ResponseEntity<ResponseData> getChatRoomList(@RequestHeader("Authorization") String token) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println(userIdx);
-        try{
+        System.out.println(token);
+        // 토큰 값 추출
+        token = token.replace("Bearer ", "");
+
+        // 토큰 검증
+        if (jwtUtil.validateToken(token)) {
+            Long userIdx = jwtUtil.getIdFromToken(token);
+
+            try{
             List<ChatRoomDTO> list = chatService.getChatRoomList(userIdx);
 
             if (list.isEmpty()) {
@@ -38,18 +51,20 @@ public class ChatController {
                 responseData.setData(list);
             }
 
-            responseData.setData(list);
-            return ResponseEntity.ok(responseData);
+                responseData.setData(list);
+                return ResponseEntity.ok(responseData);
 
-        } catch(Exception e){
-            e.printStackTrace(); // 서버 로그에 오류 출력
-            responseData.setCode("500"); // Internal Server Error
-            responseData.setMsg("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-            responseData.setData(null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+            } catch(Exception e){
+                e.printStackTrace(); // 서버 로그에 오류 출력
+                responseData.setCode("500"); // Internal Server Error
+                responseData.setMsg("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+                responseData.setData(null);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+            }
+            
+        } else {
+            throw new RuntimeException("유효하지 않은 토큰 값입니다!");
         }
-
-
     }
 
     // 채팅방 내용 불러오기 불러오기
@@ -60,7 +75,6 @@ public class ChatController {
 
         List<ChatRoomDetailDTO> list = chatService.getChatRoomDetail(roomIdx);
 
-        System.out.println(list);
         if (list.isEmpty()) {
             responseData.setCode("500");
             responseData.setMsg("채팅방 상세 불러오기 실패");
@@ -71,6 +85,5 @@ public class ChatController {
             return ResponseEntity.ok(responseData);
         }
     }
-
 
 }
