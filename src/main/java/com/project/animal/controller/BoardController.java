@@ -1,5 +1,7 @@
 package com.project.animal.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.animal.ResponseData.BoardResponseData;
 import com.project.animal.ResponseData.ErrorMessage;
 import com.project.animal.ResponseData.ResponseData;
@@ -180,40 +182,55 @@ public class BoardController {
     }
 
     // 게시글 수정하기
-    @PostMapping("/updateBoardPost")
-    public ResponseEntity<ResponseData> updateBoardPost(@RequestBody BoardPostUpdateReqDTO boardPostUpdateReqDTO) {
+    @PostMapping(value = "/updateBoardPost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseData> updateBoardPost(
+            @RequestPart("editData") String editDataJson,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println(boardPostUpdateReqDTO);
         try {
-            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // JSON 파싱
+            ObjectMapper objectMapper = new ObjectMapper();
+            BoardPostUpdateReqDTO boardPostUpdateReqDTO = objectMapper.readValue(editDataJson, BoardPostUpdateReqDTO.class);
+            System.out.println("★★★★★★★★★★" + boardPostUpdateReqDTO+"★★★★★★★★★★");
 
-            boardPostUpdateReqDTO.setAuthorIdx(userIdx);
-            Integer updateResult = boardService.updateBoardPost(boardPostUpdateReqDTO);
-
-            // 게시글 수정 성공 시
-            if (updateResult >= 1) {
-                return ResponseEntity.ok(responseData);
+            if (boardPostUpdateReqDTO.getExistingImages().isEmpty()) {
+                boardPostUpdateReqDTO.setExistingImages(new ArrayList<>()); // 빈 리스트로 초기화
             }
 
-            // 해당 데이터가 없을 시
-            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            if (newImages == null) {
+                newImages = new ArrayList<>(); // 빈 리스트로 초기화
+            }
+
+            // 사용자 검증
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!userIdx.equals(boardPostUpdateReqDTO.getAuthorIdx())) {
+                throw new SecurityException("작성자와 요청자가 일치하지 않습니다.");
+            }
+
+            // 게시글 수정 처리
+            boardService.updateBoardPost(boardPostUpdateReqDTO, newImages);
+
+            responseData.setMsg("게시글 수정 성공");
             return ResponseEntity.ok(responseData);
 
-        }
-        // 토큰 검증 실패
-        catch (ClassCastException e) {
-            System.err.println("권한 검증 실패: " + e.getMessage());
+        } catch (JsonProcessingException e) {
+            logger.error("JSON 파싱 오류: ", e);
+            responseData.setError(ErrorMessage.INVALID_REQUEST);
+            return ResponseEntity.badRequest().body(responseData);
+        } catch (SecurityException e) {
+            logger.error("권한 오류: ", e);
+            responseData.setError(ErrorMessage.UNAUTHORIZED_ACCESS);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
-        }
-        // 서버 에러 발생 시
-        catch (Exception e) {
-            logger.error("Error : ", e);
+        } catch (Exception e) {
+            logger.error("서버 오류: ", e);
             responseData.setError(ErrorMessage.SERVER_ERROR);
-            return ResponseEntity.ok(responseData);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
     }
-    
+
+
+
     // 게시글 삭제하기
     @PostMapping("/deleteBoardPost")
     public ResponseEntity<ResponseData> deleteBoardPost(@RequestBody BoardPostDeleteReqDTO boardPostDeleteReqDTO,
@@ -495,6 +512,7 @@ public class BoardController {
     }
 
 }
+
 
 
 

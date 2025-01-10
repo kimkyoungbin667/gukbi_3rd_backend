@@ -170,4 +170,27 @@
         VALUES(#{userIdx}, #{boardIdx})
     </insert>
 
+    <select id="findImagesByBoardIdx" parameterType="Long" resultType="String">
+        SELECT image_url
+        FROM tb_board_image
+        WHERE board_idx = #{boardIdx}
+    </select>
+
+    <delete id="deleteImagesByBoardIdxAndImageList" parameterType="map">
+        DELETE FROM tb_board_image
+        WHERE board_idx = #{boardIdx}
+        AND image_url IN
+        <foreach item="image" index="index" collection="imagesToDelete" open="(" separator="," close=")">
+            #{image}
+        </foreach>
+    </delete>
+
+    <insert id="insertImages" parameterType="map">
+        INSERT INTO tb_board_image (board_idx, image_url)
+        VALUES
+        <foreach item="image" index="index" collection="uploadedImages" separator=",">
+            (#{boardIdx}, #{image})
+        </foreach>
+    </insert>
+
 </mapper>

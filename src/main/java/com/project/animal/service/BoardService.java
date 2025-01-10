@@ -14,15 +14,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BoardService {
 
     @Autowired
     private BoardMapper boardMapper;
-    
+
+    @Autowired
+    private FileService fileService;
+
     // 총 게시글 수 찾기
     public int getBoardListCount() { return boardMapper.getBoardListCount();}
 
@@ -66,7 +71,74 @@ public class BoardService {
     }
 
     // 게시글 수정하기
-    public Integer updateBoardPost(BoardPostUpdateReqDTO boardPostUpdateReqDTO) {return boardMapper.updateBoardPost(boardPostUpdateReqDTO);}
+    @Transactional
+    public void updateBoardPost(BoardPostUpdateReqDTO boardPostUpdateReqDTO, List<MultipartFile> newImages) {
+        Long boardIdx = boardPostUpdateReqDTO.getBoardIdx();
+
+        // Null 체크 및 초기화
+        final List<String> existingImages = boardPostUpdateReqDTO.getExistingImages() != null
+                ? boardPostUpdateReqDTO.getExistingImages()
+                : Collections.emptyList(); // 기존 이미지 리스트 초기화
+        System.out.println("기존 이미지: " + existingImages);
+
+        // 1. 게시글에 해당하는 모든 이미지 조회
+        List<String> dbImages = boardMapper.findImagesByBoardIdx(boardIdx);
+        System.out.println("DB에 저장된 이미지 목록: " + dbImages);
+
+        // 2. 삭제할 이미지 선별 및 삭제
+        if (dbImages != null) {
+            List<String> imagesToDelete = dbImages.stream()
+                    .filter(image -> !existingImages.contains(image))
+                    .collect(Collectors.toList());
+            System.out.println("삭제할 이미지 목록: " + imagesToDelete);
+
+            if (imagesToDelete != null && !imagesToDelete.isEmpty()) {
+                try {
+                    boardMapper.deleteImagesByBoardIdxAndImageList(boardIdx, imagesToDelete); // DB에서 삭제
+                    if (fileService != null) {
+                        fileService.deleteFiles(imagesToDelete); // 파일 시스템에서 삭제
+                    } else {
+                        System.err.println("fileService가 null입니다.");
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("파일 삭제 중 오류 발생: " + e.getMessage(), e);
+                }
+            } else {
+                System.out.println("삭제할 이미지가 없습니다.");
+            }
+        } else {
+            System.err.println("DB에서 조회된 이미지가 없습니다.");
+        }
+
+        // 3. 새 이미지 처리 및 DB 추가
+        if (newImages != null && !newImages.isEmpty()) {
+            try {
+                List<String> uploadedImages = fileService.uploadFiles(newImages); // 새 이미지 업로드
+                if (uploadedImages != null && !uploadedImages.isEmpty()) {
+                    boardMapper.insertImages(boardIdx, uploadedImages); // DB에 새 이미지 경로 저장
+                } else {
+                    System.out.println("업로드된 새 이미지가 없습니다.");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("새 이미지 업로드 중 오류 발생: " + e.getMessage(), e);
+            }
+        } else {
+            System.out.println("추가할 새 이미지가 없습니다.");
+        }
+
+        // 4. 게시글 제목 및 내용 수정 처리
+        try {
+            boardMapper.updateBoardPost(boardPostUpdateReqDTO);
+            System.out.println("게시글 수정 성공");
+        } catch (Exception e) {
+            throw new RuntimeException("게시글 수정 중 오류 발생: " + e.getMessage(), e);
+        }
+    }
+
+
+
+
+
 
     // 게시글 삭제하기
     public Integer deleteBoardPost(BoardPostDeleteReqDTO boardPostDeleteReqDTO) {return boardMapper.deleteBoardPost(boardPostDeleteReqDTO);}
