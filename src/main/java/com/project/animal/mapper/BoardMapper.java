@@ -53,4 +53,12 @@ public interface BoardMapper {
     // 좋아요 -1 하기
     Integer downBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
 
+    // 게시글 이미지 불러오기
+    List<String> findImagesByBoardIdx(Long boardIdx);
+    
+    // 게시글 이미지 삭제
+    void deleteImagesByBoardIdxAndImageList(Long boardIdx, List<String> imagesToDelete);
+
+    // 게시글 이미지 추가
+    void insertImages(Long boardIdx, List<String> uploadedImages);
 }
