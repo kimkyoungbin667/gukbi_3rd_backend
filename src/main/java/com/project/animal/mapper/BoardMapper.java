@@ -18,6 +18,9 @@ public interface BoardMapper {
     // 게시글 작성하기
     Integer createBoardPost(BoardPostCreateReqDTO boardPostCreateReqDTO);
 
+    // 게시글 이미지 하나씩 저장
+    Integer insertBoardImage(@Param("boardIdx") Long boardIdx, @Param("imagePath") String imagePath);
+
     // 게시글 상세보기
     BoardPostReadResDTO readBoardPost(BoardPostReadReqDTO boardPostReadReqDTO);
 
@@ -46,4 +49,16 @@ public interface BoardMapper {
 
     // 좋아요 +1 하기
     Integer upBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 좋아요 -1 하기
+    Integer downBoardPostLike(BoardPostUpLikeReqDTO boardPostUpLikeReqDTO);
+
+    // 게시글 이미지 불러오기
+    List<String> findImagesByBoardIdx(Long boardIdx);
+    
+    // 게시글 이미지 삭제
+    void deleteImagesByBoardIdxAndImageList(Long boardIdx, List<String> imagesToDelete);
+
+    // 게시글 이미지 추가
+    void insertImages(Long boardIdx, List<String> uploadedImages);
 }
