@@ -164,5 +164,33 @@ public class UserService {
         return user.getUserNickname();
     }
 
+    // 비밀번호 변경
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userMapper.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
 
+        // 현재 비밀번호 확인
+        if (!passwordEncoder.matches(currentPassword, user.getUserPassword())) {
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 암호화
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+        user.setUserPassword(encodedNewPassword);
+
+        // 비밀번호 업데이트
+        userMapper.updateUserPassword(user);
+    }
+
+    // 회원 탈퇴
+    public void deactivateUser(Long userId) {
+        User user = userMapper.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        userMapper.deactivateUser(userId);
+    }
 }

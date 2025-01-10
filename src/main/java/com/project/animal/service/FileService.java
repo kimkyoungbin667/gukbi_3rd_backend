@@ -15,6 +15,7 @@ import java.util.UUID;
 public class FileService {
 
     private final String uploadDir = "C:/Users/202016017/Desktop/gukbi/3rd_Project/gukbi_3rd_backend/uploads/"; // 절대 경로 사용
+    private final String petUploadDir = "C:/Users/202016017/Desktop/gukbi/3rd_Project/gukbi_3rd_backend/uploads/pets/";
 
 
     public String saveFile(MultipartFile file) {
@@ -43,6 +44,27 @@ public class FileService {
             throw new RuntimeException("파일 저장 중 오류 발생: " + e.getMessage());
         }
     }
+
+    public String savePetFile(MultipartFile file) {
+        try {
+            Path uploadPath = Paths.get(petUploadDir);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            String uniqueFileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(uniqueFileName);
+
+            file.transferTo(filePath.toFile());
+
+            // URL에 http://localhost:8080 추가
+            return "http://localhost:8080/uploads/pets/" + uniqueFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 중 오류 발생: " + e.getMessage());
+        }
+    }
+
 
 
 
