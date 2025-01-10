@@ -1,14 +1,19 @@
 package com.project.animal.mapper;
 
-import com.project.animal.dto.map.PathReq;
-import com.project.animal.dto.map.WalkReq;
+import com.project.animal.dto.map.*;
 import org.apache.ibatis.annotations.*;
+
+import java.util.List;
 
 @Mapper
 public interface MapMapper {
 
     //산책 저장
-    int addWalk(WalkReq walkReq);
+    Long addWalk(WalkAddReq walkAddReq);
     //산책 경로 저장 
-    int addPath(PathReq pathReq);
+    Long addPath(PathAddReq pathAddReq);
+
+    List<PathDTO> getPaths(Long userIdx);
+
+    List<WalkDTO> getWalks(Long userIdx);
 }
