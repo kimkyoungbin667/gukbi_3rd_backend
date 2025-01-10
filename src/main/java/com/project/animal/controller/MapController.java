@@ -1,8 +1,10 @@
 package com.project.animal.controller;
 
 import com.project.animal.ResponseData.ResponseData;
-import com.project.animal.dto.map.PathReq;
-import com.project.animal.dto.map.WalkReq;
+import com.project.animal.dto.map.PathAddReq;
+import com.project.animal.dto.map.WalkAddReq;
+import com.project.animal.dto.map.WalksGetReq;
+import com.project.animal.dto.map.WalksGetRes;
 import com.project.animal.service.MapService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/map")
+@RequestMapping("api/map")
 public class MapController {
 
     @Autowired
@@ -22,13 +24,13 @@ public class MapController {
     Logger logger = LoggerFactory.getLogger(MapController.class);
 
     @PostMapping("/walkRoutes/add")
-    public ResponseEntity<?> addWalk(@RequestBody WalkReq walkReq) {
+    public ResponseEntity<ResponseData> addWalk(@RequestBody WalkAddReq walkReq) {
         ResponseData responseData = new ResponseData();
 
-        int logId = mapService.addWalk(walkReq);
+        Long logId = mapService.addWalk(walkReq);
         logger.info(logId + "");
 
-        for (PathReq path : walkReq.getPaths()) {
+        for (PathAddReq path : walkReq.getPaths()) {
             path.setLogId(logId);
             mapService.addPath(path);
         }
@@ -37,8 +39,21 @@ public class MapController {
     }
 
     @GetMapping("/test")
-    public void test(@RequestBody WalkReq walkReq) {
+    public void test(@RequestBody WalkAddReq walkReq) {
 
 
+    }
+
+    @PostMapping("/walkRoutes/getWalks")
+    public ResponseEntity<ResponseData> getWalkRoutes(@RequestBody WalksGetReq walksGetReq) {
+        ResponseData responseData = new ResponseData();
+
+        List<WalksGetRes> walksGetResList = mapService.getWalks(walksGetReq);
+
+        logger.info(walksGetResList.toString());
+        responseData.setData(walksGetResList);
+        logger.info(responseData.toString());
+
+        return ResponseEntity.ok(responseData);
     }
 }
