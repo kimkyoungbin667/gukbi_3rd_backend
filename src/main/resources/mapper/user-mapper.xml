@@ -65,6 +65,19 @@
         WHERE user_id = #{userId}
     </delete>
 
+    <!-- 비밀번호 변경 -->
+    <update id="updateUserPassword" parameterType="com.project.animal.model.User">
+        UPDATE tb_user
+        SET user_password = #{userPassword}
+        WHERE user_idx = #{userIdx}
+    </update>
+
+    <!-- 회원 탈퇴 -->
+    <update id="deactivateUser" parameterType="Long">
+        UPDATE tb_user
+        SET is_active = FALSE
+        WHERE user_idx = #{userId};
+    </update>
 
 
 </mapper>

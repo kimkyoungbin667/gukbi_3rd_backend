@@ -116,9 +116,6 @@ public class UserController {
         }
     }
 
-
-
-
     //사용자 정보 불러오기
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfile(@RequestHeader("Authorization") String token) {
@@ -178,6 +175,10 @@ public class UserController {
     public ResponseEntity<String> updateUserProfile(
             @RequestHeader("Authorization") String token,
             @RequestBody ProfileUpdateDTO profileUpdateDTO) {
+        // 디버깅: 클라이언트로부터 받은 데이터 확인
+        System.out.println("받은 닉네임: " + profileUpdateDTO.getNickname());
+        System.out.println("받은 프로필 URL: " + profileUpdateDTO.getProfileUrl());
+
         // 토큰에서 사용자 ID 추출
         Long userId = jwtUtil.getIdFromToken(token.replace("Bearer ", ""));
 
@@ -205,6 +206,36 @@ public class UserController {
         }
     }
 
+    // 비밀번호 변경
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> passwordData) {
+        try {
+            String currentPassword = passwordData.get("currentPassword");
+            String newPassword = passwordData.get("newPassword");
 
+            // 토큰에서 사용자 ID 추출
+            Long userId = jwtUtil.getIdFromToken(token.replace("Bearer ", ""));
+
+            // 비밀번호 변경 서비스 호출
+            userService.changePassword(userId, currentPassword, newPassword);
+            return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // 회원 탈퇴
+    @PutMapping("/deactivate")
+    public ResponseEntity<String> deactivateUser(@RequestHeader("Authorization") String token) {
+        try {
+            Long userId = jwtUtil.getIdFromToken(token.replace("Bearer ", ""));
+            userService.deactivateUser(userId);
+            return ResponseEntity.ok("회원 탈퇴가 성공적으로 처리되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -28,16 +29,15 @@ public class PetService {
 
     public String getPetInfoFromApi(PetInfoRequestDto requestDto) throws Exception {
         try {
-            // API 요청 URL 생성
             String encodedServiceKey = URLEncoder.encode(originalServiceKey, StandardCharsets.UTF_8.toString());
             URI uri = UriComponentsBuilder.fromHttpUrl("https://apis.data.go.kr/1543061/animalInfoSrvc/animalInfo")
-                    .queryParam("serviceKey", encodedServiceKey) // URL 인코딩된 서비스 키
+                    .queryParam("serviceKey", encodedServiceKey)
                     .queryParam("dog_reg_no", requestDto.getDogRegNo())
                     .queryParam("rfid_cd", requestDto.getRfidCd() != null ? requestDto.getRfidCd() : "")
-                    .queryParam("owner_nm", URLEncoder.encode(requestDto.getOwnerNm(), StandardCharsets.UTF_8.toString())) // 한글 인코딩
+                    .queryParam("owner_nm", URLEncoder.encode(requestDto.getOwnerNm(), StandardCharsets.UTF_8.toString()))
                     .queryParam("owner_birth", requestDto.getOwnerBirth() != null ? requestDto.getOwnerBirth() : "")
                     .queryParam("_type", "json")
-                    .build(true) // true: 자동 인코딩 방지
+                    .build(true)
                     .toUri();
 
             logger.info("API 요청 URL: {}", uri);
@@ -65,6 +65,28 @@ public class PetService {
     }
 
     public void savePetInfoToDb(Long userId, Map<String, Object> petData) {
+        petData.put("userIdx", userId); // 사용자 ID 추가
         petMapper.insertPetInfo(petData);
     }
+
+    public List<Map<String, Object>> getPetsByUserId(Long userId) {
+        return petMapper.findPetsByUserId(userId);
+    }
+
+    public void deletePetById(Long userId, Long petId) {
+        int rowsAffected = petMapper.deletePetById(userId, petId);
+        if (rowsAffected == 0) {
+            throw new RuntimeException("No pet found for the given user and pet ID.");
+        }
+    }
+
+    public void updatePetImage(Long userId, Long petId, String imageUrl) {
+        try {
+            petMapper.updatePetImage(userId, petId, imageUrl);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update pet image", e);
+        }
+    }
+
+
 }

@@ -5,15 +5,38 @@
 
 <mapper namespace="com.project.animal.mapper.PetMapper">
 
+    <!-- 펫 정보 삽입 -->
     <insert id="insertPetInfo">
         INSERT INTO tb_pet_info (
-            dog_reg_no, rfid_cd, dog_name, sex, kind_name, neuter_status,
-            organization_name, office_tel, approval_status, created_at, updated_at
+            user_idx, dog_reg_no, rfid_cd, dog_name, sex, kind_name, neuter_status,
+            organization_name, office_tel, approval_status, profile_url, created_at, updated_at
         )
         VALUES (
-                   #{dogRegNo}, #{rfidCd}, #{dogNm}, #{sexNm}, #{kindNm}, #{neuterYn},
-                   #{orgNm}, #{officeTel}, #{aprGbNm}, NOW(), NOW()
+                   #{userIdx}, #{dogRegNo}, #{rfidCd}, #{dogNm}, #{sexNm}, #{kindNm}, #{neuterYn},
+                   #{orgNm}, #{officeTel}, #{aprGbNm}, #{profileUrl}, NOW(), NOW()
                )
     </insert>
+
+    <!-- 사용자별 펫 정보 조회 -->
+    <select id="findPetsByUserId" resultType="map">
+        SELECT
+            pet_id, user_idx, dog_reg_no, rfid_cd, dog_name, sex, kind_name, neuter_status,
+            organization_name, office_tel, approval_status, profile_url, created_at, updated_at
+        FROM tb_pet_info
+        WHERE user_idx = #{userIdx}
+    </select>
+
+    <!-- 펫 정보 삭제 -->
+    <delete id="deletePetById">
+        DELETE FROM tb_pet_info
+        WHERE pet_id = #{petId} AND user_idx = #{userId}
+    </delete>
+
+    <update id="updatePetImage">
+        UPDATE tb_pet_info
+        SET profile_url = #{profileUrl}
+        WHERE pet_id = #{petId} AND user_idx = #{userId};
+    </update>
+
 
 </mapper>

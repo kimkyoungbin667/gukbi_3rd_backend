@@ -21,4 +21,8 @@ public interface UserMapper {
 
     // 리프레시 토큰 삭제
     void deleteRefreshToken(@Param("userId") Long userId);
+
+    void updateUserPassword(User user);
+
+    void deactivateUser(@Param("userId") Long userId); // 회원 탈퇴
 }
