@@ -3,7 +3,7 @@
 
 <mapper namespace="com.project.animal.mapper.MapMapper">
 
-    <insert id="addWalk" parameterType="WalkReq" useGeneratedKeys="true" keyProperty="logId">
+    <insert id="addWalk" parameterType="WalkAddReq" useGeneratedKeys="true" keyProperty="logId">
         insert into WALKINGLOGS
         (user_idx,
          walk_name,
@@ -15,7 +15,7 @@
         VALUES (#{userIdx},#{walkName}, #{walkDate}, #{startTime}, #{endTime}, #{distance}, #{duration})
     </insert>
 
-    <insert id="addPath" parameterType="PathReq">
+    <insert id="addPath" parameterType="PathAddReq">
         insert into WALKINGPATHS
         (
          log_id,
@@ -27,4 +27,30 @@
 
     </insert>
 
+    <select id="getWalks" parameterType="Long" resultType="WalkDTO">
+        select log_id,
+               walk_name,
+               walk_date,
+               start_time,
+               end_time,
+               distance,
+               duration
+        FROM walkinglogs
+        WHERE user_idx = #{userIdx}
+        ORDER BY walk_date DESC, start_time DESC
+    </select>
+
+    <select id="getPaths" parameterType="Long" resultType="PathDTO">
+        select path_id,
+               log_id,
+               sequence,
+               latitude,
+               longitude
+        FROM walkingpaths
+        WHERE log_id IN (
+        SELECT log_id
+        FROM walkinglogs
+        WHERE user_idx = #{userIdx})
+        ORDER BY log_id, sequence;
+    </select>
 </mapper>
