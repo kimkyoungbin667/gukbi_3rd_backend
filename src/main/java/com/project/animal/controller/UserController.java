@@ -1,14 +1,18 @@
 package com.project.animal.controller;
 
 import com.project.animal.dto.user.LoginDTO;
+import com.project.animal.dto.user.ProfileUpdateDTO;
 import com.project.animal.dto.user.UserDTO;
 import com.project.animal.model.User;
+import com.project.animal.service.FileService;
 import com.project.animal.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.project.animal.dto.user.RegisterDTO;
 import com.project.animal.service.UserService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +23,35 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final FileService fileService;
 
-    public UserController(UserService userService, JwtUtil jwtUtil) {
+    public UserController(UserService userService, JwtUtil jwtUtil, FileService fileService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.fileService = fileService;
     }
 
+    //리프레쉬 토큰
+    @PostMapping("/refresh-token")
+    public ResponseEntity<Map<String, String>> refreshAccessToken(@RequestBody Map<String, String> request) {
+        try {
+            String refreshToken = request.get("refreshToken");
+
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Refresh token is missing"));
+            }
+
+            // 새 액세스 토큰 발행
+            String newAccessToken = userService.refreshAccessToken(refreshToken);
+
+            // 응답으로 새 액세스 토큰 반환
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    //회원가입
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody RegisterDTO registerDTO) {
         if (registerDTO.getUserEmail() == null || registerDTO.getUserEmail().isEmpty()) {
@@ -34,53 +61,76 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
+    //일반 로그인
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginDTO loginDTO) {
-        String token = userService.login(loginDTO);
-        Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-        return ResponseEntity.ok(response);
+        try {
+            // 로그인 시 액세스 토큰과 리프레시 토큰을 함께 반환
+            Map<String, String> tokens = userService.login(loginDTO);
+            return ResponseEntity.ok(tokens);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+        }
     }
 
+    //카카오 로그인
     @PostMapping("/kakao-login")
     public ResponseEntity<Map<String, String>> kakaoLogin(@RequestBody Map<String, String> kakaoData) {
-        String accessToken = kakaoData.get("access_token");
+        String kakaoAccessToken = kakaoData.get("access_token");
 
         try {
-            // 카카오 API 호출 및 사용자 처리
-            User user = userService.kakaoLogin(accessToken);
+            // 카카오 로그인 처리
+            Map<String, String> tokens = userService.kakaoLogin(kakaoAccessToken);
 
-            // JWT 생성 (ID와 이메일 포함)
-            String token = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
-
-            // 응답 데이터 생성
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-
-            return ResponseEntity.ok(response); // JWT 반환
+            // 응답으로 액세스 토큰과 리프레시 토큰 반환
+            return ResponseEntity.ok(tokens);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "카카오 로그인 실패: " + e.getMessage()));
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String token) {
+        try {
+            if (token == null) {
+                System.out.println("Authorization 헤더가 없습니다.");
+                return ResponseEntity.badRequest().body("Authorization 헤더가 없습니다.");
+            }
+
+            System.out.println("Authorization 헤더: " + token);
+
+            String actualToken = token.replace("Bearer ", "");
+            Long userId = jwtUtil.getIdFromToken(actualToken);
+            System.out.println("추출된 UserID: " + userId);
+
+            userService.logout(userId);
+            return ResponseEntity.ok("로그아웃 완료");
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT 만료 예외 발생: " + e.getMessage());
+            return ResponseEntity.ok("JWT 만료: 로그아웃 처리 완료");
+        } catch (Exception e) {
+            System.out.println("로그아웃 처리 중 예외 발생: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "로그아웃 처리 실패", "message", e.getMessage()));
+        }
+    }
+
+
+
+
+    //사용자 정보 불러오기
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getUserProfile(@RequestHeader("Authorization") String token) {
         try {
             String actualToken = token.replace("Bearer ", "");
-            System.out.println("Received token: " + actualToken);
-
             if (!jwtUtil.validateToken(actualToken)) {
-                System.out.println("Invalid token.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
 
             Long userId = jwtUtil.getIdFromToken(actualToken);
-            System.out.println("Extracted user ID: " + userId);
-
             User user = userService.findUserProfileById(userId);
             if (user == null) {
-                System.out.println("No user found for ID: " + userId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
@@ -91,16 +141,69 @@ public class UserController {
                     user.getUserEmail(),
                     user.getUserBirth(),
                     null,
-                    user.getUserProfileUrl()
+                    user.getUserProfileUrl(),
+                    user.getSocialType() // 소셜 타입 추가
             );
+
 
             return ResponseEntity.ok(userDTO);
         } catch (Exception e) {
-            System.err.println("Error in getUserProfile: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
+    // 닉네임 가져오기
+    @GetMapping("/nickname")
+    public ResponseEntity<String> getNicknameFromToken(@RequestHeader("Authorization") String token) {
+        try {
+            if (token == null || token.trim().isEmpty()) {
+                throw new IllegalArgumentException("Authorization header is missing or empty");
+            }
+            String actualToken = token.replace("Bearer ", "");
+            Long userId = jwtUtil.getIdFromToken(actualToken);
+            String nickname = userService.findNicknameById(userId);
+
+            if (nickname == null || nickname.trim().isEmpty()) {
+                return ResponseEntity.ok("");
+            }
+
+            return ResponseEntity.ok(nickname);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("닉네임 조회 실패: " + e.getMessage());
+        }
+    }
+
+    //처음 닉네임,이미지 설정하기
+    @PutMapping("/profile2")
+    public ResponseEntity<String> updateUserProfile(
+            @RequestHeader("Authorization") String token,
+            @RequestBody ProfileUpdateDTO profileUpdateDTO) {
+        // 토큰에서 사용자 ID 추출
+        Long userId = jwtUtil.getIdFromToken(token.replace("Bearer ", ""));
+
+        // 서비스 호출
+        userService.updateUserProfile(userId, profileUpdateDTO.getNickname(), profileUpdateDTO.getProfileUrl());
+        return ResponseEntity.ok("프로필 업데이트 성공!");
+    }
+
+    //파일 업로드
+    @PostMapping("/upload/profile-image")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("file") MultipartFile file) {
+        try {
+            System.out.println("파일 업로드 시작");
+            System.out.println("파일 이름: " + file.getOriginalFilename());
+            System.out.println("파일 타입: " + file.getContentType());
+            System.out.println("파일 크기: " + file.getSize());
+
+            String imageUrl = fileService.saveFile(file);
+            System.out.println("이미지 URL: " + imageUrl);
+
+            return ResponseEntity.ok(Map.of("url", imageUrl));
+        } catch (Exception e) {
+            e.printStackTrace(); // 서버 로그에 예외 출력
+            return ResponseEntity.status(500).body(Map.of("message", "이미지 업로드에 실패했습니다."));
+        }
+    }
 
 
 
