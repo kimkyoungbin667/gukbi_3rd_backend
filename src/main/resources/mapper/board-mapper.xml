@@ -38,7 +38,7 @@
         WHERE is_deleted = 0;
     </select>
 
-    <insert id="createBoardPost" parameterType="BoardPostCreateReqDTO">
+    <insert id="createBoardPost" parameterType="BoardPostCreateReqDTO" keyProperty="boardIdx" useGeneratedKeys="true" >
         INSERT tb_board(
             title,
             content,
@@ -51,17 +51,27 @@
         )
     </insert>
 
+    <insert id="insertBoardImage">
+        INSERT INTO tb_board_image (
+            board_idx,
+            image_url
+        ) VALUES (
+                     #{boardIdx},
+                     #{imagePath}
+                 )
+    </insert>
+
     <select id="readBoardPost" parameterType="BoardPostReadReqDTO" resultType="BoardPostReadResDTO">
         SELECT
-            b.board_idx AS boardIdx,               -- 게시글 인덱스
-            b.title AS title,                      -- 제목
-            b.content AS content,                  -- 내용
-            COALESCE(l.likeCount, 0) AS likeCount, -- 좋아요 수 (없을 경우 0으로 대체)
-            b.is_deleted AS isDeleted,             -- 삭제 여부
+            b.board_idx AS boardIdx,                     -- 게시글 인덱스
+            b.title AS title,                            -- 제목
+            b.content AS content,                        -- 내용
+            COALESCE(l.likeCount, 0) AS likeCount,       -- 좋아요 수 (없을 경우 0으로 대체)
+            b.is_deleted AS isDeleted,                   -- 삭제 여부
             DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt, -- 작성일 (년-월-일 시:분:초)
-            b.created_by_user_idx AS createdByUserIdx, -- 작성자 인덱스
-            u.user_nickname AS createdByUserNickname,  -- 작성자 닉네임
-            b.view_count AS viewCount,             -- 조회수
+            b.created_by_user_idx AS createdByUserIdx,   -- 작성자 인덱스
+            u.user_nickname AS createdByUserNickname,    -- 작성자 닉네임
+            b.view_count AS viewCount,                   -- 조회수
             CASE
                 WHEN EXISTS (
                     SELECT 1
@@ -69,7 +79,8 @@
                     WHERE tl.board_idx = b.board_idx AND tl.user_idx = #{userIdx} -- 현재 사용자의 좋아요 여부 확인
                 ) THEN TRUE
                 ELSE FALSE
-                END AS isLiked -- 현재 사용자가 좋아요를 눌렀는지 여부
+                END AS isLiked,                              -- 현재 사용자가 좋아요를 눌렀는지 여부
+            GROUP_CONCAT(i.image_url) AS imagePath       -- 게시글에 포함된 이미지 URL (콤마로 연결)
         FROM
             tb_board b
                 LEFT JOIN tb_user u ON b.created_by_user_idx = u.user_idx
@@ -82,8 +93,12 @@
                 GROUP BY
                     board_idx
             ) l ON b.board_idx = l.board_idx -- 좋아요 수 조인
+                LEFT JOIN tb_board_image i ON b.board_idx = i.board_idx -- 이미지 테이블 조인
         WHERE
-            b.board_idx = #{boardIdx} AND b.is_deleted = 0;
+            b.board_idx = #{boardIdx} AND b.is_deleted = 0
+        GROUP BY
+            b.board_idx; -- 게시글별로 그룹화
+
     </select>
 
     <update id="updateBoardPost" parameterType="BoardPostUpdateReqDTO">
@@ -144,9 +159,38 @@
         WHERE user_idx = #{userIdx} AND board_idx = #{boardIdx}
     </select>
 
+    <delete id="downBoardPostLike" parameterType="boardPostUpLikeReqDTO">
+        DELETE FROM tb_like
+        WHERE user_idx = #{userIdx} AND board_idx = #{boardIdx}
+
+    </delete>
+
     <insert id="upBoardPostLike" parameterType="boardPostUpLikeReqDTO">
         INSERT INTO tb_like(user_idx, board_idx)
         VALUES(#{userIdx}, #{boardIdx})
+    </insert>
+
+    <select id="findImagesByBoardIdx" parameterType="Long" resultType="String">
+        SELECT image_url
+        FROM tb_board_image
+        WHERE board_idx = #{boardIdx}
+    </select>
+
+    <delete id="deleteImagesByBoardIdxAndImageList" parameterType="map">
+        DELETE FROM tb_board_image
+        WHERE board_idx = #{boardIdx}
+        AND image_url IN
+        <foreach item="image" index="index" collection="imagesToDelete" open="(" separator="," close=")">
+            #{image}
+        </foreach>
+    </delete>
+
+    <insert id="insertImages" parameterType="map">
+        INSERT INTO tb_board_image (board_idx, image_url)
+        VALUES
+        <foreach item="image" index="index" collection="uploadedImages" separator=",">
+            (#{boardIdx}, #{image})
+        </foreach>
     </insert>
 
 </mapper>
