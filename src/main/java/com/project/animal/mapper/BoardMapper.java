@@ -56,9 +56,12 @@ public interface BoardMapper {
     // 게시글 이미지 불러오기
     List<String> findImagesByBoardIdx(Long boardIdx);
     
-    // 게시글 이미지 삭제
+    // 게시글 이미지 삭제하기
     void deleteImagesByBoardIdxAndImageList(Long boardIdx, List<String> imagesToDelete);
 
-    // 게시글 이미지 추가
+    // 게시글 이미지 추가하기
     void insertImages(Long boardIdx, List<String> uploadedImages);
+
+    // 댓글(대댓글) 삭제하기
+    Integer deleteBoardComment(BoardPostDeleteCommentReqDTO boardPostDeleteCommentReqDTO);
 }

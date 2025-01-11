@@ -32,6 +32,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // WebSocket 엔드포인트 설정 + JWT 토큰 인증 추가
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*") // 모든 도메인 허용
+                .setAllowedOrigins("http://58.74.46.219:33333")  // 클라이언트 주소 허용
                 .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
                 .withSockJS(); // SockJS 사용
     }

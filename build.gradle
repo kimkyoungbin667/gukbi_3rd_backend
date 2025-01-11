@@ -55,6 +55,12 @@ dependencies {
 	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.security:spring-security-crypto'
+
+	// HTTP 요청을 위한 라이브러리
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	// JSON 처리
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.named('test') {

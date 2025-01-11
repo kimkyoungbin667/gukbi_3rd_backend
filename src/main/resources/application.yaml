@@ -1,9 +1,16 @@
 # server port
 server:
-  port: 8080
+  port: 8080  # 원하는 포트로 변경
+  address: 0.0.0.0
 
 # database
 spring:
+  profiles:
+    active: local  # 활성화할 프로필 설정
+
+  config:
+    import: application-secret.yaml  # secret 파일 불러오기
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/animal?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -38,3 +45,6 @@ mybatis:
   #MybatisAlias
   type-aliases-package: com.project.animal.dto
 
+openai:
+  api:
+    url: https://api.openai.com/v1/chat/completions

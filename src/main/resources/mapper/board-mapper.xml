@@ -131,7 +131,7 @@
             u.user_profile_url AS authorProfileUrl
         FROM tb_comment c
                  LEFT JOIN tb_user u ON c.author_idx = u.user_idx
-        WHERE c.board_idx = #{boardIdx}
+        WHERE c.board_idx = #{boardIdx} AND c.is_active = 1
     </select>
 
     <insert id="createBoardComment" parameterType="BoardPostCreateCommentReqDTO">
@@ -192,5 +192,11 @@
             (#{boardIdx}, #{image})
         </foreach>
     </insert>
+
+    <update id="deleteBoardComment" parameterType="BoardPostDeleteCommentReqDTO">
+        UPDATE tb_comment
+        SET is_active = 0
+        WHERE comment_idx = #{commentIdx}
+    </update>
 
 </mapper>
