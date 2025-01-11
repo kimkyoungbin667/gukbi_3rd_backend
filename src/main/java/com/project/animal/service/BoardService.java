@@ -193,9 +193,9 @@ public class BoardService {
         return "upload/" + uniqueFileName;
     }
 
-
-    public void processCreateBoardPost(BoardPostCreateReqDTO boardPostCreateReqDTO) {
-
+    //
+    public Integer deleteBoardComment(BoardPostDeleteCommentReqDTO boardPostDeleteCommentReqDTO) {
+        return boardMapper.deleteBoardComment(boardPostDeleteCommentReqDTO);
     }
 
     // 게시글 이미지 테이블에 이미지 저장

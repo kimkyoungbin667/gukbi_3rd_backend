@@ -29,7 +29,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/api/board")
-@CrossOrigin(origins = "http://localhost:3000") // 3000 포트의 클라이언트 허용
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class BoardController {
 
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
@@ -101,6 +101,7 @@ public class BoardController {
 
         ResponseData responseData = new ResponseData();
 
+        System.out.println("씰행댐");
         try {
             // 사용자 인증 정보 가져오기
             Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -247,6 +248,45 @@ public class BoardController {
             }
 
             Integer deleteResult = boardService.deleteBoardPost(boardPostDeleteReqDTO);
+
+            // 게시글 삭제 완료 시
+            if (deleteResult >= 1) {
+                return ResponseEntity.ok(responseData);
+            }
+
+            // 해당 데이터가 없을 시
+            responseData.setError(ErrorMessage.BOARD_NOT_FOUND);
+            return ResponseEntity.ok(responseData);
+
+        }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
+    }
+
+    // 댓글, 대댓글 삭제하기
+    @PostMapping("/deleteBoardPostComment")
+    public ResponseEntity<ResponseData> commentDelete(@RequestBody BoardPostDeleteCommentReqDTO boardPostDeleteCommentReqDTO,
+                                                        @RequestHeader("Authorization") String token) {
+        ResponseData responseData = new ResponseData();
+
+        try {
+            String actualToken = token.replace("Bearer ", "");
+
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.err.println("권한 검증 실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+
+            Integer deleteResult = boardService.deleteBoardComment(boardPostDeleteCommentReqDTO);
 
             // 게시글 삭제 완료 시
             if (deleteResult >= 1) {

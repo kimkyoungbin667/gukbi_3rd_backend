@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .cors().configurationSource(corsConfigurationSource()) // CORS 설정 추가
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/**","/upload/**").permitAll() // 허용 경로
+                .antMatchers("/api/**","/upload/**", "/ws/**").permitAll() // 허용 경로
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -66,6 +66,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOrigin("http://localhost:3000"); // 허용할 프론트엔드 도메인
+        configuration.addAllowedOrigin("http://58.74.46.219:33333"); // 허용할 프론트엔드 도메인
         configuration.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.setAllowCredentials(true); // 쿠키 허용

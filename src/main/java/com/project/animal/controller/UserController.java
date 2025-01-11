@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:3000") // 3000 포트의 클라이언트 허용
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
