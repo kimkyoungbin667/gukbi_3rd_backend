@@ -17,11 +17,6 @@ public class AiService {
     @Value("${openai.api.url}")
     private String apiUrl;
 
-    /**
-     * GPT-3.5 Turbo와 통신하여 응답을 반환하는 메서드
-     * @param prompt React에서 전달받은 질문 또는 요청
-     * @return GPT의 응답
-     */
     public String getChatResponse(String prompt) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -34,8 +29,10 @@ public class AiService {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "gpt-3.5-turbo");  // GPT 모델
         requestBody.put("messages", new Object[]{
+                Map.of("role", "system", "content", "너는 귀엽고 장난기 많은 고양이 AI인데 반려동물 전문가야. 대답할 때는 항상 '~냥' 말투를 사용해!"),
                 Map.of("role", "user", "content", prompt)
         });
+
         requestBody.put("max_tokens", 500);  // 최대 토큰 수
 
         // HTTP 요청 생성
