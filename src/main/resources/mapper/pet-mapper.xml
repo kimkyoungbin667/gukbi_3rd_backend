@@ -38,5 +38,109 @@
         WHERE pet_id = #{petId} AND user_idx = #{userId};
     </update>
 
+    <!-- 펫 상세 정보 추가 또는 업데이트 -->
+    <insert id="insertOrUpdatePetDetails">
+        INSERT INTO tb_pet_details (
+            pet_id, birth_date, health_status, dietary_requirements, allergies, notes, created_at, updated_at
+        )
+        VALUES (
+                   #{petId}, #{birthDate}, #{healthStatus}, #{dietaryRequirements}, #{allergies}, #{notes}, NOW(), NOW()
+               )
+            ON DUPLICATE KEY UPDATE
+                                 birth_date = VALUES(birth_date),
+                                 health_status = VALUES(health_status),
+                                 dietary_requirements = VALUES(dietary_requirements),
+                                 allergies = VALUES(allergies),
+                                 notes = VALUES(notes),
+                                 updated_at = NOW()
+    </insert>
+
+    <!-- 펫 상세 정보 조회 -->
+    <select id="findPetDetailsByPetId" resultType="map">
+        SELECT
+            detail_id, pet_id, birth_date, health_status, dietary_requirements, allergies, notes, created_at, updated_at
+        FROM tb_pet_details
+        WHERE pet_id = #{petId}
+    </select>
+
+    <!-- 의료 기록 조회 -->
+    <select id="findMedicalRecordsByPetId" resultType="map">
+        SELECT
+            medical_id, pet_id, record_type, record_date, description, next_due_date, clinic_name, vet_name, notes, created_at
+        FROM tb_pet_medical_records
+        WHERE pet_id = #{petId}
+    </select>
+
+    <!-- 의료 기록 추가 -->
+    <insert id="insertMedicalRecord" parameterType="map">
+        INSERT INTO tb_pet_medical_records (
+            pet_id, record_type, record_date, description, next_due_date, clinic_name, vet_name, notes
+        )
+        VALUES (
+                   #{petId}, #{recordType}, #{recordDate}, #{description}, #{nextDueDate}, #{clinicName}, #{vetName}, #{notes}
+               )
+    </insert>
+
+    <!-- 의료 기록 삭제 -->
+    <delete id="deleteMedicalRecord">
+        DELETE FROM tb_pet_medical_records
+        WHERE medical_id = #{medicalId}
+    </delete>
+
+    <!-- 특정 사용자가 펫을 소유하는지 확인 -->
+    <select id="isPetOwnedByUser" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_pet_info
+        WHERE user_idx = #{userId} AND pet_id = #{petId}
+    </select>
+
+    <!-- 특정 사용자가 의료 기록을 소유하는지 확인 -->
+    <select id="isMedicalRecordOwnedByUser" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_pet_medical_records m
+                 JOIN tb_pet_info p ON m.pet_id = p.pet_id
+        WHERE m.medical_id = #{medicalId} AND p.user_idx = #{userId}
+    </select>
+
+    <insert id="insertDailyRecord">
+        INSERT INTO tb_pet_daily_activity (
+            pet_id, activity_date, activity_time, meal_amount, exercise_duration,
+            exercise_distance, weight, water_intake, notes
+        )
+        VALUES (
+                   #{petId}, #{activityDate}, #{activityTime}, #{mealAmount}, #{exerciseDuration},
+                   #{exerciseDistance}, #{weight}, #{waterIntake}, #{notes}
+               )
+    </insert>
+
+    <update id="updateDailyRecord">
+        UPDATE tb_pet_daily_activity
+        SET
+            activity_date = #{activityDate},
+            activity_time = #{activityTime},
+            meal_amount = #{mealAmount},
+            exercise_duration = #{exerciseDuration},
+            exercise_distance = #{exerciseDistance},
+            weight = #{weight},
+            water_intake = #{waterIntake},
+            notes = #{notes}
+        WHERE daily_id = #{dailyId}
+    </update>
+
+    <select id="findDailyRecordsByPetId" resultType="map">
+        SELECT
+            daily_id, pet_id, activity_date, activity_time, meal_amount, exercise_duration,
+            exercise_distance, weight, water_intake, notes, created_at
+        FROM tb_pet_daily_activity
+        WHERE pet_id = #{petId}
+        ORDER BY activity_date DESC
+    </select>
+
+    <delete id="deleteDailyRecord">
+        DELETE FROM tb_pet_daily_activity
+        WHERE daily_id = #{dailyId}
+    </delete>
+
+
 
 </mapper>

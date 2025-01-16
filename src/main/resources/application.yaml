@@ -29,6 +29,11 @@ spring:
           starttls:
             enable: true
 
+  kakao:
+    api:
+      url: https://kapi.kakao.com/v2/api/talk/memo/send
+      token: YOUR_ACCESS_TOKEN
+
   servlet:
     multipart:
       enabled: true

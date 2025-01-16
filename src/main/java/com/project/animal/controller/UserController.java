@@ -5,6 +5,7 @@ import com.project.animal.dto.user.ProfileUpdateDTO;
 import com.project.animal.dto.user.UserDTO;
 import com.project.animal.model.User;
 import com.project.animal.service.FileService;
+import com.project.animal.service.KakaoApiService;
 import com.project.animal.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
@@ -19,16 +20,18 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "http://58.74.46.219:33333")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final FileService fileService;
+    private final KakaoApiService kakaoApiService;
 
-    public UserController(UserService userService, JwtUtil jwtUtil, FileService fileService) {
+    public UserController(UserService userService, JwtUtil jwtUtil, FileService fileService, KakaoApiService kakaoApiService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.fileService = fileService;
+        this.kakaoApiService = kakaoApiService;
     }
 
     //리프레쉬 토큰
@@ -73,16 +76,13 @@ public class UserController {
         }
     }
 
-    //카카오 로그인
+    // 카카오 로그인
     @PostMapping("/kakao-login")
     public ResponseEntity<Map<String, String>> kakaoLogin(@RequestBody Map<String, String> kakaoData) {
         String kakaoAccessToken = kakaoData.get("access_token");
 
         try {
-            // 카카오 로그인 처리
             Map<String, String> tokens = userService.kakaoLogin(kakaoAccessToken);
-
-            // 응답으로 액세스 토큰과 리프레시 토큰 반환
             return ResponseEntity.ok(tokens);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -235,6 +235,43 @@ public class UserController {
             return ResponseEntity.ok("회원 탈퇴가 성공적으로 처리되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/kakao-message")
+    public ResponseEntity<String> sendKakaoMessage(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, String> request) {
+        try {
+            String actualToken = token.replace("Bearer ", "");
+            Long userId = jwtUtil.getIdFromToken(actualToken);
+
+            String message = request.get("message");
+            if (message == null || message.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("메시지는 필수 입력 항목입니다.");
+            }
+
+            userService.sendMessage(userId, message);
+
+            return ResponseEntity.ok("카카오톡 메시지가 성공적으로 전송되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("메시지 전송 실패: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/kakao/authorize")
+    public ResponseEntity<String> handleKakaoAuthorization(@RequestParam("code") String authorizationCode) {
+        try {
+            String newAccessToken = kakaoApiService.getNewAccessToken(authorizationCode);
+            System.out.println("새로운 카카오 액세스 토큰: " + newAccessToken);
+
+            // 토큰을 사용자 데이터베이스에 저장
+            userService.updateKakaoAccessToken(newAccessToken);
+
+            return ResponseEntity.ok("카카오톡 동의 완료 및 액세스 토큰 갱신 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("액세스 토큰 갱신 실패: " + e.getMessage());
         }
     }
 

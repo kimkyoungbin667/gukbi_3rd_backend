@@ -1,5 +1,8 @@
 package com.project.animal.service;
 
+import com.project.animal.dto.pet.MedicalRecordDto;
+import com.project.animal.dto.pet.PetDailyRecordDto;
+import com.project.animal.dto.pet.PetDetailsRequestDto;
 import com.project.animal.dto.pet.PetInfoRequestDto;
 import com.project.animal.mapper.PetMapper;
 import org.slf4j.Logger;
@@ -12,8 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PetService {
@@ -88,5 +90,227 @@ public class PetService {
         }
     }
 
+    public void savePetDetails(Long userId, PetDetailsRequestDto detailsRequest) {
+        if (!isPetOwnedByUser(userId, detailsRequest.getPetId())) {
+            throw new RuntimeException("Unauthorized access to pet details.");
+        }
+
+        Map<String, Object> detailsData = Map.of(
+                "petId", detailsRequest.getPetId(),
+                "birthDate", detailsRequest.getBirthDate(),
+                "healthStatus", detailsRequest.getHealthStatus(),
+                "dietaryRequirements", detailsRequest.getDietaryRequirements(),
+                "allergies", detailsRequest.getAllergies(),
+                "notes", detailsRequest.getNotes()
+        );
+
+        petMapper.insertOrUpdatePetDetails(detailsData);
+    }
+
+    public Map<String, Object> getPetDetails(Long userId, Long petId) {
+        if (!isPetOwnedByUser(userId, petId)) {
+            throw new RuntimeException("Unauthorized access to pet details.");
+        }
+        return petMapper.findPetDetailsByPetId(petId);
+    }
+
+    public boolean isPetOwnedByUser(Long userId, Long petId) {
+        var pets = petMapper.findPetsByUserId(userId);
+        return pets.stream().anyMatch(pet -> pet.get("pet_id").equals(petId));
+    }
+
+    public List<Map<String, Object>> getMedicalRecords(Long userId, Long petId) {
+        if (!isPetOwnedByUser(userId, petId)) {
+            throw new RuntimeException("Unauthorized access to medical records.");
+        }
+        return petMapper.findMedicalRecordsByPetId(petId);
+    }
+
+    public void addMedicalRecord(Long userId, MedicalRecordDto medicalRecord) {
+        if (!isPetOwnedByUser(userId, medicalRecord.getPetId())) {
+            throw new RuntimeException("Unauthorized access to pet medical records.");
+        }
+
+        System.out.println("Adding Medical Record for Pet ID: " + medicalRecord.getPetId()); // 확인 출력
+
+        Map<String, Object> recordData = Map.of(
+                "petId", medicalRecord.getPetId(),
+                "recordType", medicalRecord.getRecordType(),
+                "recordDate", medicalRecord.getRecordDate(),
+                "description", medicalRecord.getDescription(),
+                "nextDueDate", medicalRecord.getNextDueDate(),
+                "clinicName", medicalRecord.getClinicName(),
+                "vetName", medicalRecord.getVetName(),
+                "notes", medicalRecord.getNotes()
+        );
+
+        petMapper.insertMedicalRecord(recordData);
+    }
+
+    public void deleteMedicalRecord(Long userId, Long medicalId) {
+        if (!isMedicalRecordOwnedByUser(userId, medicalId)) {
+            throw new RuntimeException("Unauthorized access to delete medical record.");
+        }
+        petMapper.deleteMedicalRecord(medicalId);
+    }
+
+    private boolean isMedicalRecordOwnedByUser(Long userId, Long medicalId) {
+        return petMapper.isMedicalRecordOwnedByUser(userId, medicalId) > 0;
+    }
+
+    // 하루 기록 저장
+    public void saveDailyRecord(PetDailyRecordDto dailyRecordDto) {
+        Map<String, Object> recordData = new HashMap<>();
+        recordData.put("dailyId", dailyRecordDto.getDailyId());
+        recordData.put("petId", dailyRecordDto.getPetId());
+        recordData.put("activityDate", dailyRecordDto.getActivityDate());
+        recordData.put("activityTime", dailyRecordDto.getActivityTime());
+
+        if (dailyRecordDto.getMealAmount() != null) {
+            recordData.put("mealAmount", dailyRecordDto.getMealAmount());
+        }
+        if (dailyRecordDto.getExerciseDuration() != null) {
+            recordData.put("exerciseDuration", dailyRecordDto.getExerciseDuration());
+        }
+        if (dailyRecordDto.getExerciseDistance() != null) {
+            recordData.put("exerciseDistance", dailyRecordDto.getExerciseDistance());
+        }
+        if (dailyRecordDto.getWeight() != null) {
+            recordData.put("weight", dailyRecordDto.getWeight());
+        }
+        if (dailyRecordDto.getWaterIntake() != null) {
+            recordData.put("waterIntake", dailyRecordDto.getWaterIntake());
+        }
+        if (dailyRecordDto.getNotes() != null) {
+            recordData.put("notes", dailyRecordDto.getNotes());
+        }
+
+        if (dailyRecordDto.getDailyId() == null) {
+            petMapper.insertDailyRecord(recordData);
+        } else {
+            petMapper.updateDailyRecord(recordData);
+        }
+    }
+
+    // 특정 펫의 하루 기록 조회
+    public List<Map<String, Object>> getDailyRecords(Long petId) {
+        return petMapper.findDailyRecordsByPetId(petId); // 모든 기록 조회
+    }
+
+    public List<Map<String, Object>> getMealRecords(Long petId) {
+        return petMapper.findMealRecordsByPetId(petId); // 식사 기록만 조회
+    }
+
+    public List<Map<String, Object>> getExerciseRecords(Long petId) {
+        return petMapper.findExerciseRecordsByPetId(petId); // 운동 기록만 조회
+    }
+
+    public List<Map<String, Object>> getWeightRecords(Long petId) {
+        return petMapper.findWeightRecordsByPetId(petId); // 몸무게 기록만 조회
+    }
+
+    // 하루 기록 삭제
+    public void deleteDailyRecord(Long dailyId) {
+        petMapper.deleteDailyRecord(dailyId);
+    }
+
+    public Map<String, Object> getPetGraphData(Long userId, Long petId) {
+        // 사용자와 펫 관계 확인
+        if (!isPetOwnedByUser(userId, petId)) {
+            throw new RuntimeException("Unauthorized access to pet data.");
+        }
+
+        // DB에서 그래프 데이터 조회
+        List<Map<String, Object>> records = petMapper.findGraphDataByPetId(petId);
+
+        // 데이터 그룹화 초기화
+        Map<String, List<Double>> groupedData = new HashMap<>();
+        groupedData.put("mealAmount", new ArrayList<>(Collections.nCopies(7, 0.0)));
+        groupedData.put("exerciseDuration", new ArrayList<>(Collections.nCopies(7, 0.0)));
+        groupedData.put("weight", new ArrayList<>(Collections.nCopies(7, 0.0)));
+        groupedData.put("waterIntake", new ArrayList<>(Collections.nCopies(7, 0.0)));
+
+        // 요일 인덱스 매핑
+        Map<String, Integer> dayIndex = Map.of(
+                "Monday", 0, "Tuesday", 1, "Wednesday", 2,
+                "Thursday", 3, "Friday", 4, "Saturday", 5, "Sunday", 6
+        );
+
+        // 데이터 처리
+        for (Map<String, Object> record : records) {
+            try {
+                String dayOfWeek = (String) record.get("dayOfWeek");
+                if (!dayIndex.containsKey(dayOfWeek)) continue; // 유효하지 않은 요일 스킵
+
+                int index = dayIndex.get(dayOfWeek);
+
+                // 각 필드 데이터 업데이트
+                groupedData.get("mealAmount").set(
+                        index,
+                        groupedData.get("mealAmount").get(index) + safeConvertToDouble(record.get("mealAmount"))
+                );
+                groupedData.get("exerciseDuration").set(
+                        index,
+                        groupedData.get("exerciseDuration").get(index) + safeConvertToDouble(record.get("exerciseDuration"))
+                );
+                groupedData.get("weight").set(
+                        index,
+                        safeConvertToDouble(record.get("weight"))
+                ); // 몸무게는 누적하지 않음
+                groupedData.get("waterIntake").set(
+                        index,
+                        groupedData.get("waterIntake").get(index) + safeConvertToDouble(record.get("waterIntake"))
+                );
+            } catch (Exception e) {
+                System.err.println("Error processing record: " + record);
+                e.printStackTrace();
+            }
+        }
+
+        // 그래프 데이터 생성
+        return Map.of(
+                "labels", List.of("월", "화", "수", "목", "금", "토", "일"),
+                "datasets", List.of(
+                        Map.of(
+                                "label", "식사량 (g)",
+                                "data", groupedData.get("mealAmount"),
+                                "backgroundColor", "rgba(75, 192, 192, 0.6)",
+                                "borderColor", "rgba(75, 192, 192, 1)"
+                        ),
+                        Map.of(
+                                "label", "운동 시간 (분)",
+                                "data", groupedData.get("exerciseDuration"),
+                                "backgroundColor", "rgba(153, 102, 255, 0.6)",
+                                "borderColor", "rgba(153, 102, 255, 1)"
+                        ),
+                        Map.of(
+                                "label", "몸무게 (kg)",
+                                "data", groupedData.get("weight"),
+                                "type", "line",
+                                "backgroundColor", "rgba(255, 99, 132, 0.6)",
+                                "borderColor", "rgba(255, 99, 132, 1)"
+                        ),
+                        Map.of(
+                                "label", "물 섭취량 (ml)",
+                                "data", groupedData.get("waterIntake"),
+                                "backgroundColor", "rgba(54, 162, 235, 0.6)",
+                                "borderColor", "rgba(54, 162, 235, 1)"
+                        )
+                )
+        );
+    }
+
+    // 안전하게 숫자 변환하는 메서드
+    private double safeConvertToDouble(Object value) {
+        if (value == null) return 0.0;
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        try {
+            return Double.parseDouble(value.toString());
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
 
 }
