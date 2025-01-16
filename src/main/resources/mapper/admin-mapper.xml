@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.project.animal.mapper.AdminMapper">
+
+    <!-- 모든 사용자 가져오기 -->
+    <select id="getAllUsers" resultType="map">
+        SELECT
+            user_idx,
+            user_name,
+            user_nickname,
+            user_email,
+            user_birth,
+            is_active,
+            kakao_id,
+            social_type,
+            created_at
+        FROM tb_user;
+    </select>
+
+    <!-- 특정 사용자 삭제 -->
+    <delete id="deleteUser">
+        DELETE FROM tb_user WHERE user_idx = #{userId};
+    </delete>
+
+    <!-- 사용자 활성화/비활성화 업데이트 -->
+    <update id="updateUserStatus">
+        UPDATE tb_user
+        SET is_active = #{isActive}
+        WHERE user_idx = #{userId};
+    </update>
+
+    <!-- 모든 게시글 가져오기 -->
+    <select id="getAllPosts" resultType="map">
+        SELECT
+            tb_board.board_idx,
+            tb_board.title,
+            tb_board.content,
+            tb_board.like_count,
+            tb_board.view_count,
+            tb_board.is_deleted,
+            tb_board.created_at,
+            tb_user.user_name AS author_name,
+            tb_user.user_email AS author_email
+        FROM tb_board
+                 JOIN tb_user ON tb_board.created_by_user_idx = tb_user.user_idx;
+    </select>
+
+
+    <!-- 특정 게시글 삭제 -->
+    <delete id="deletePost">
+        DELETE FROM tb_board WHERE board_idx = #{postId};
+    </delete>
+
+    <!-- 특정 사용자가 작성한 게시글 가져오기 -->
+    <select id="getUserPosts" resultType="map">
+        SELECT
+            tb_board.board_idx,
+            tb_board.title,
+            tb_board.content,
+            tb_board.like_count,
+            tb_board.view_count,
+            tb_board.created_at,
+            tb_board.is_deleted
+        FROM tb_board
+        WHERE tb_board.created_by_user_idx = #{userId};
+    </select>
+
+    <!-- 특정 사용자가 작성한 댓글 가져오기 -->
+    <select id="getUserComments" resultType="map">
+        SELECT
+            tb_comment.comment_idx,
+            tb_comment.board_idx,
+            tb_comment.content,
+            tb_comment.created_at,
+            tb_comment.is_active
+        FROM tb_comment
+        WHERE tb_comment.author_idx = #{userId};
+    </select>
+
+</mapper>

@@ -26,17 +26,20 @@
             user_birth,
             user_password,
             user_profile_url,
-            social_type -- 소셜 타입 추가
+            social_type,
+        kakao_access_token,   <!-- 추가 -->
+        kakao_token_expiry
         FROM tb_user
         WHERE user_idx = #{userId}
     </select>
-
 
     <update id="updateUserProfile" parameterType="com.project.animal.model.User">
         UPDATE tb_user
         SET
             user_nickname = #{userNickname},
-            user_profile_url = #{userProfileUrl}
+            user_profile_url = #{userProfileUrl},
+            kakao_access_token = #{kakaoAccessToken},
+            kakao_token_expiry = #{kakaoTokenExpiry}
         WHERE user_idx = #{userIdx}
     </update>
 
@@ -78,6 +81,25 @@
         SET is_active = FALSE
         WHERE user_idx = #{userId};
     </update>
+
+    <!-- 카카오 ID로 사용자 조회 -->
+    <select id="findByKakaoId" parameterType="string" resultType="com.project.animal.model.User">
+        SELECT *
+        FROM tb_user
+        WHERE kakao_id = #{kakaoId}
+    </select>
+
+    <!-- 사용자 정보 업데이트 -->
+    <update id="updateUser">
+        UPDATE tb_user
+        SET
+        kakao_access_token = #{kakaoAccessToken},
+        kakao_refresh_token = #{kakaoRefreshToken},  <!-- 리프레시 토큰 저장 -->
+        kakao_token_expiry = #{kakaoTokenExpiry},    <!-- 토큰 만료 시간 저장 -->
+        updated_at = NOW()                          <!-- 수정 시간 기록 -->
+        WHERE user_idx = #{userIdx}
+    </update>
+
 
 
 </mapper>

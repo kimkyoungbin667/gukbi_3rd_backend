@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,4 +18,7 @@ public class User {
     private String userProfileUrl; // 프로필 URL 필드
     private String kakaoId; // Kakao ID 추가
     private String socialType;
+    private String kakaoAccessToken; // 카카오 액세스 토큰
+    private String kakaoRefreshToken; // 카카오 리프레시 토큰
+    private LocalDateTime kakaoTokenExpiry;
 }
