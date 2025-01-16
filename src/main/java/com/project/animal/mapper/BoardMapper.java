@@ -4,6 +4,7 @@ import com.project.animal.dto.board.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper
@@ -64,4 +65,7 @@ public interface BoardMapper {
 
     // 댓글(대댓글) 삭제하기
     Integer deleteBoardComment(BoardPostDeleteCommentReqDTO boardPostDeleteCommentReqDTO);
+
+    // 산책 경로 불러오기
+    List<PathResDTO> getPath(Long userIdx);
 }

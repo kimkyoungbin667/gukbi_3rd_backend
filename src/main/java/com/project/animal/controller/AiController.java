@@ -1,13 +1,21 @@
 package com.project.animal.controller;
 
+import com.project.animal.ResponseData.ErrorMessage;
+import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.ai.AiMessageReqDTO;
 import com.project.animal.dto.ai.AnimalResDTO;
 import com.project.animal.service.AiService;
+import com.project.animal.util.JwtUtil;
 import lombok.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +25,13 @@ import java.util.Map;
 @RequestMapping("/api/ai")
 @CrossOrigin(origins = "http://58.74.46.219:33333")
 public class AiController {
+
     @Autowired
     private AiService aiService;
+
+    private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
+
+    @Autowired private JwtUtil jwtUtil;
 
     @PostMapping("/chat")
     public ResponseEntity<String> getChatResponse(@RequestBody AiMessageReqDTO AiMessageReqDTO) {
@@ -29,40 +42,33 @@ public class AiController {
         return ResponseEntity.ok(response);  // React에 응답 반환
     }
 
+    // 게시글 파일 업로드하기
     @GetMapping("/getAnimalList")
-    public ResponseEntity<List<AnimalResDTO>> getAnimalList() {
+    public ResponseEntity<?> getAnimalList() {
+        ResponseData responseData = new ResponseData();
 
-        List<AnimalResDTO> list = new ArrayList<>();
+        try {
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        AnimalResDTO animalResDTO = new AnimalResDTO();
-        animalResDTO.setAge(4);
-        animalResDTO.setBreed("웰시코기");
-        animalResDTO.setName("춘식이");
-        animalResDTO.setImageUrl("testDog.jpg");
+            List<AnimalResDTO> list = new ArrayList<>();
+            list = aiService.getAnimalList(userIdx);
+            System.out.println(userIdx);
+            System.out.println(list);
 
-        AnimalResDTO animalResDTO2 = new AnimalResDTO();
-        animalResDTO2.setAge(2);
-        animalResDTO2.setBreed("말티즈");
-        animalResDTO2.setName("진돗개");
-        animalResDTO2.setImageUrl("testDog2.jpg");
+            responseData.setData(list);
+            return ResponseEntity.ok(responseData);
 
-        AnimalResDTO animalResDTO3 = new AnimalResDTO();
-        animalResDTO3.setAge(5);
-        animalResDTO3.setBreed("먼치킨");
-        animalResDTO3.setName("냥농냥");
-        animalResDTO3.setImageUrl("testCat1.jpg");
-
-        AnimalResDTO animalResDTO4 = new AnimalResDTO();
-        animalResDTO4.setAge(10);
-        animalResDTO4.setBreed("노르웨이 터키시 앙고라");
-        animalResDTO4.setName("앙콜라");
-        animalResDTO4.setImageUrl("testCat2.jpg");
-
-        list.add(animalResDTO);
-        list.add(animalResDTO2);
-        list.add(animalResDTO3);
-        list.add(animalResDTO4);
-
-        return ResponseEntity.ok(list);
+        }
+        // 토큰 검증 실패
+        catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
+        }
+        // 서버 에러 발생 시
+        catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.ok(responseData);
+        }
     }
 }

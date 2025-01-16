@@ -1,11 +1,15 @@
 package com.project.animal.service;
 
+import com.project.animal.dto.ai.AnimalResDTO;
+import com.project.animal.mapper.AiMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -16,6 +20,9 @@ public class AiService {
 
     @Value("${openai.api.url}")
     private String apiUrl;
+
+    @Autowired
+    AiMapper aiMapper;
 
     public String getChatResponse(String prompt) {
         RestTemplate restTemplate = new RestTemplate();
@@ -56,4 +63,10 @@ public class AiService {
             return "오류가 발생했습니다.";
         }
     }
+
+    // 반려동물 목록 불러오기
+    public List<AnimalResDTO> getAnimalList(Long userIdx) {
+        return aiMapper.getAnimalList(userIdx);
+    }
+
 }
