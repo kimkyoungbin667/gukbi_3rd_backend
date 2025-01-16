@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.animal.mapper.CalendarMapper">
+
+    <!-- 모든 일정 조회 -->
+    <select id="findAllEvents" resultType="com.project.animal.dto.calendar.EventDto">
+        SELECT * FROM tb_calendar
+    </select>
+
+    <!-- 특정 일정 조회 -->
+    <select id="findEventById" resultType="com.project.animal.dto.calendar.EventDto" parameterType="long">
+        SELECT * FROM tb_calendar WHERE event_id = #{eventId}
+    </select>
+
+    <!-- 일정 추가 -->
+    <insert id="insertEvent" parameterType="com.project.animal.dto.calendar.EventDto" useGeneratedKeys="true" keyProperty="eventId">
+        INSERT INTO tb_calendar (pet_id, title, description, event_date, event_time, user_idx)
+        VALUES (#{petId}, #{title}, #{description}, #{eventDate}, #{eventTime}, #{userId})
+    </insert>
+
+    <!-- 일정 수정 -->
+    <update id="updateEvent" parameterType="com.project.animal.dto.calendar.EventDto">
+        UPDATE tb_calendar
+        SET pet_id = #{petId}, title = #{title}, description = #{description}, event_date = #{eventDate}
+        WHERE event_id = #{eventId}
+    </update>
+
+    <!-- 일정 삭제 -->
+    <delete id="deleteEvent" parameterType="long">
+        DELETE FROM tb_calendar WHERE event_id = #{eventId}
+    </delete>
+
+</mapper>
