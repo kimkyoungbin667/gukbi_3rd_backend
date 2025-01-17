@@ -9,4 +9,42 @@
         INSERT INTO tb_notifications (event_id, notify_time, is_sent)
         VALUES (#{eventId}, #{notifyTime}, #{isSent})
     </insert>
+
+    <!-- 현재 시간에 도달한 알림 조회 -->
+    <select id="findPendingNotifications" parameterType="java.time.LocalDateTime" resultType="com.project.animal.dto.notification.NotificationDto">
+        SELECT
+        notification_id AS notificationId,
+        event_id AS eventId,
+        notify_time AS notifyTime,
+        is_sent AS isSent,
+        created_at AS createdAt
+        FROM tb_notifications
+        WHERE notify_time &lt;= #{now}
+        AND is_sent = false
+    </select>
+
+    <!-- 알림 상태 업데이트 -->
+    <update id="updateNotificationStatus" parameterType="java.lang.Long">
+        UPDATE tb_notifications
+        SET is_sent = true
+        WHERE notification_id = #{notificationId}
+    </update>
+
+    <!-- 알림 ID로 이벤트 및 사용자 정보 조회 -->
+    <select id="findEventByNotification" parameterType="java.lang.Long" resultType="com.project.animal.dto.notification.NotificationEventDto">
+        SELECT
+            n.notification_id AS notificationId,
+            e.event_id AS eventId,
+            e.title AS title,
+            e.event_date AS eventDate,
+            e.event_time AS eventTime,
+            u.user_email AS userEmail,
+            u.social_type AS socialType,
+            u.kakao_access_token AS kakaoAccessToken
+        FROM tb_notifications n
+                 JOIN tb_calendar e ON n.event_id = e.event_id
+                 JOIN tb_user u ON e.user_idx = u.user_idx
+        WHERE n.notification_id = #{notificationId}
+    </select>
+
 </mapper>
