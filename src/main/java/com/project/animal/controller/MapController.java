@@ -1,10 +1,7 @@
 package com.project.animal.controller;
 
 import com.project.animal.ResponseData.ResponseData;
-import com.project.animal.dto.map.PathAddReq;
-import com.project.animal.dto.map.WalkAddReq;
-import com.project.animal.dto.map.WalksGetReq;
-import com.project.animal.dto.map.WalksGetRes;
+import com.project.animal.dto.map.*;
 import com.project.animal.service.MapService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,4 +54,63 @@ public class MapController {
 
         return ResponseEntity.ok(responseData);
     }
+
+    @GetMapping("/getPetAccompanyDetail")
+    public ResponseEntity<ResponseData> getPetAccompanyDetails() {
+        ResponseData responseData = new ResponseData();
+        List<PetAccompanyDetailsRes> petAccompanyDetailsResList = mapService.getPetAccompanyDetails();
+
+        responseData.setData(petAccompanyDetailsResList);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/category/addFavorite")
+    public ResponseEntity<ResponseData> addCategoryFavorite(@RequestBody CategoryFavoriteAddReq categoryFavoriteAddReq) {
+        ResponseData responseData = new ResponseData();
+        mapService.addCategoryFavorite(categoryFavoriteAddReq);
+
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/category/getFavorite")
+    public ResponseEntity<ResponseData> getCategoryFavorite(@RequestBody CategoryFavoriteGetReq categoryFavoriteGetReq) {
+        ResponseData responseData = new ResponseData();
+        List<CategoryFavoriteGetRes> result = mapService.getFavoritesByUserIdx(categoryFavoriteGetReq.getUserIdx());
+
+        responseData.setData(result);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/category/deleteFavorite")
+    public ResponseEntity<ResponseData> deleteCategoryFavorite(@RequestBody CategoryFavoriteDeleteReq categoryFavoriteDeleteReq) {
+    ResponseData responseData = new ResponseData();
+        mapService.deleteCategoryFavorite(categoryFavoriteDeleteReq.getUserIdx(),categoryFavoriteDeleteReq.getContentid());
+
+        return ResponseEntity.ok(responseData);
+    }
+
+
+    @PostMapping("/accompany/addFavorite")
+    public ResponseEntity<ResponseData> addAccompanyFavorite(@RequestBody AccompanyFavoriteAddReq accompanyFavoriteAddReq) {
+        ResponseData responseData = new ResponseData();
+        mapService.addAccompanyFavorite(accompanyFavoriteAddReq);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/accompany/getFavorite")
+    public ResponseEntity<ResponseData> getAccompanyFavorite(@RequestBody AccompanyFavoriteGetReq accompanyFavoriteGetReq) {
+        ResponseData responseData = new ResponseData();
+        List<AccompanyFavoriteGetRes> result =mapService.getAccompanyFavoritesByUserIdx(accompanyFavoriteGetReq);
+        responseData.setData(result);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/accompany/deleteFavorite")
+    public ResponseEntity<ResponseData> deleteAccompanyFavorite(@RequestBody AccompanyFavoriteAddReq accompanyFavoriteAddReq) {
+        ResponseData responseData = new ResponseData();
+        mapService.deleteAccompanyFavorite(accompanyFavoriteAddReq);
+        return ResponseEntity.ok(responseData);
+    }
+
+
 }
