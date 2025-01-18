@@ -146,11 +146,15 @@ public class PetController {
             }
 
             Long userId = jwtUtil.getIdFromToken(actualToken);
-            String imageUrl = fileService.savePetFile(file);
 
-            petService.updatePetImage(userId, petId, imageUrl);
+            // 이미지 저장 및 URL 생성
+            String relativeUrl = fileService.savePetFile(file);
+            String absoluteUrl = "http://localhost:8080" + relativeUrl;
 
-            return ResponseEntity.ok(Map.of("url", "http://localhost:8080" + imageUrl));
+            // 펫 정보 업데이트
+            petService.updatePetImage(userId, petId, relativeUrl);
+
+            return ResponseEntity.ok(Map.of("url", absoluteUrl));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Image upload failed", "message", e.getMessage()));

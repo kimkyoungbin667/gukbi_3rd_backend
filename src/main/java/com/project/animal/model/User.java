@@ -21,4 +21,6 @@ public class User {
     private String kakaoAccessToken; // 카카오 액세스 토큰
     private String kakaoRefreshToken; // 카카오 리프레시 토큰
     private LocalDateTime kakaoTokenExpiry;
+    private Boolean isAdmin; // 관리자 여부
+    private Boolean isActive; // 계정 활성화 여부
 }
