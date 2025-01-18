@@ -13,4 +13,5 @@ public class ChatRoomDetailDTO {
     private String message;
     private LocalDateTime sentAt;
     private String senderProfile;
+    private String image;
 }
