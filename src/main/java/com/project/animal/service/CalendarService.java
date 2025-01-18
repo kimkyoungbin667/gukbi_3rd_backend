@@ -7,7 +7,9 @@ import com.project.animal.mapper.NotificationMapper;
 import com.project.animal.mapper.UserMapper;
 import com.project.animal.model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -87,7 +89,6 @@ public class CalendarService {
         }
     }
 
-
     // 일정 수정
     public void updateEvent(Long eventId, EventDto eventDto) {
         EventDto existingEvent = getEventById(eventId); // 존재 여부 확인
@@ -99,4 +100,40 @@ public class CalendarService {
     public void deleteEvent(Long eventId) {
         calendarMapper.deleteEvent(eventId);
     }
+
+    @Transactional
+    public Long createEventWithNotification(Long userId, EventDto eventDto) {
+        // 이벤트 데이터 저장
+        eventDto.setUserId(userId);
+        calendarMapper.insertEvent(eventDto);
+
+        // 생성된 이벤트 ID 가져오기
+        Long eventId = eventDto.getEventId();
+
+        // 알림 데이터 추가
+        createNotification(eventId, eventDto);
+
+        return eventId;
+    }
+
+    private void createNotification(Long eventId, EventDto eventDto) {
+        LocalDateTime eventDateTime = LocalDateTime.of(eventDto.getEventDate(), eventDto.getEventTime());
+
+        // 24시간 전 알림
+        NotificationDto notification24Hours = new NotificationDto();
+        notification24Hours.setEventId(eventId);
+        notification24Hours.setNotifyTime(eventDateTime.minusDays(1)); // 24시간 전
+        notification24Hours.setIsSent(false);
+        notificationMapper.insertNotification(notification24Hours);
+
+        // 1시간 전 알림
+        NotificationDto notification1Hour = new NotificationDto();
+        notification1Hour.setEventId(eventId);
+        notification1Hour.setNotifyTime(eventDateTime.minusHours(1)); // 1시간 전
+        notification1Hour.setIsSent(false);
+        notificationMapper.insertNotification(notification1Hour);
+
+        System.out.println("알림 데이터가 생성되었습니다: 24시간 전 및 1시간 전");
+    }
+
 }
