@@ -28,4 +28,9 @@ public class ChatService {
 
     // 메세지 전송하기
     public int sendMessage(SendMessageDTO message) {return chatMapper.sendMessage(message);}
+
+    // 유저 프로필 가져오기
+    public String getUserProfile(Long senderIdx) {
+        return chatMapper.getUserProfile(senderIdx);
+    }
 }

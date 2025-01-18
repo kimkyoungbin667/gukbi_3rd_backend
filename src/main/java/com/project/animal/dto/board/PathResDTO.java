@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-// 산책 기록 응답 DTO
+// 산책 기록 반환 DTO
 @Data
 public class PathResDTO {
     

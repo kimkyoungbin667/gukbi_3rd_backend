@@ -29,7 +29,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/api/board")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class BoardController {
 
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
