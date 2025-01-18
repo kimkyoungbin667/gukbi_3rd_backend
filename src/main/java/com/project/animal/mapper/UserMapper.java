@@ -5,6 +5,7 @@ import com.project.animal.model.User;
 import org.apache.ibatis.annotations.Mapper;
 import com.project.animal.dto.user.RegisterDTO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
@@ -25,4 +26,9 @@ public interface UserMapper {
     void updateUserPassword(User user);
 
     void deactivateUser(@Param("userId") Long userId); // 회원 탈퇴
+
+    // 카카오 ID로 사용자 조회
+    User findByKakaoId(@Param("kakaoId") String kakaoId);
+
+    void updateUser(User user);
 }

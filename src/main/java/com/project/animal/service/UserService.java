@@ -13,6 +13,7 @@ import com.project.animal.mapper.UserMapper;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,11 +22,13 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final KakaoApiService kakaoApiService;
 
-    public UserService(UserMapper userMapper, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
+    public UserService(UserMapper userMapper, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, KakaoApiService kakaoApiService) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.kakaoApiService = kakaoApiService;
     }
 
     // 회원 가입
@@ -74,7 +77,7 @@ public class UserService {
         return jwtUtil.generateToken(userId, jwtUtil.getEmailFromToken(refreshToken));
     }
 
-    //카카오 로그인
+    // 카카오 로그인
     public Map<String, String> kakaoLogin(String accessToken) {
         RestTemplate restTemplate = new RestTemplate();
         String kakaoUserInfoUrl = "https://kapi.kakao.com/v2/user/me";
@@ -84,53 +87,47 @@ public class UserService {
 
         HttpEntity<String> entity = new HttpEntity<>("", headers);
 
-        ResponseEntity<Map> response;
-        try {
-            response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, entity, Map.class);
-            System.out.println("카카오 API 호출 성공: " + response.getBody());
-        } catch (Exception e) {
-            System.err.println("카카오 API 호출 실패: " + e.getMessage());
-            throw new RuntimeException("카카오 API 호출 실패: " + e.getMessage(), e);
-        }
+        ResponseEntity<Map> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, entity, Map.class);
 
         Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
-        if (kakaoAccount == null || kakaoAccount.get("email") == null) {
-            throw new RuntimeException("카카오 계정에서 이메일 정보를 가져올 수 없습니다.");
-        }
-
         String email = (String) kakaoAccount.get("email");
+        String kakaoId = response.getBody().get("id").toString();
 
-        User user = userMapper.findByEmail(email);
+        // 카카오 ID로 사용자 조회
+        User user = userMapper.findByKakaoId(kakaoId);
         if (user == null) {
-            user = new User();
-            user.setUserEmail(email);
-            user.setUserName((String) ((Map<String, Object>) response.getBody().get("properties")).get("nickname"));
-            user.setKakaoId(response.getBody().get("id").toString());
-            user.setSocialType("KAKAO");
-
+            // 새 사용자 등록을 위한 DTO 생성
             RegisterDTO registerDTO = new RegisterDTO();
-            registerDTO.setUserEmail(user.getUserEmail());
-            registerDTO.setUserName(user.getUserName());
-            registerDTO.setKakaoId(user.getKakaoId());
-            registerDTO.setSocialType(user.getSocialType());
+            registerDTO.setUserEmail(email);
+            registerDTO.setUserName((String) ((Map<String, Object>) response.getBody().get("properties")).get("nickname"));
+            registerDTO.setKakaoId(kakaoId);
+            registerDTO.setSocialType("KAKAO");
 
+            // 새 사용자 등록
             userMapper.registerUser(registerDTO);
+
+            // 등록 후 사용자 정보 다시 조회
+            user = userMapper.findByKakaoId(kakaoId);
         }
 
-        // 액세스 토큰 및 리프레시 토큰 생성
+        // 토큰 정보 저장
+        user.setKakaoAccessToken(accessToken);
+        user.setKakaoTokenExpiry(LocalDateTime.now().plusHours(2)); // 카카오 토큰 만료 시간 설정
+        userMapper.updateUserProfile(user);
+
+        // JWT 생성
         String newAccessToken = jwtUtil.generateToken(user.getUserIdx(), user.getUserEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUserIdx());
 
-        // 리프레시 토큰 저장
         userMapper.saveRefreshToken(user.getUserIdx(), refreshToken);
 
-        // 반환할 토큰 맵 생성
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", newAccessToken);
         tokens.put("refreshToken", refreshToken);
 
         return tokens;
     }
+
 
     public void logout(Long userId) {
         // 리프레시 토큰 삭제
@@ -193,4 +190,34 @@ public class UserService {
 
         userMapper.deactivateUser(userId);
     }
+
+    public void sendMessage(Long userId, String message) {
+        User user = userMapper.findUserById(userId);
+
+        if (user == null || user.getKakaoAccessToken() == null) {
+            throw new RuntimeException("사용자가 없거나 카카오 액세스 토큰이 없습니다.");
+        }
+
+        // 카카오 액세스 토큰 만료 여부 확인
+        if (user.getKakaoTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("카카오 액세스 토큰이 만료되었습니다. 다시 로그인하세요.");
+        }
+
+        // 메시지 전송
+        kakaoApiService.sendMessageToUser(user.getKakaoAccessToken(), message);
+    }
+
+    // UserService.java
+    public void updateKakaoAccessToken(String newAccessToken) {
+        Long userId = jwtUtil.getIdFromToken(newAccessToken);
+        User user = userMapper.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        user.setKakaoAccessToken(newAccessToken);
+        user.setKakaoTokenExpiry(LocalDateTime.now().plusHours(2)); // 만료 시간 갱신
+        userMapper.updateUserProfile(user);
+    }
+
 }
