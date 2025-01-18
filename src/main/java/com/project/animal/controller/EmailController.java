@@ -26,6 +26,12 @@ public class EmailController {
     @PostMapping("/send-code")
     public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");
+
+        // 이메일 중복 확인
+        if (emailVerificationMapper.isEmailExists(email)) {
+            return ResponseEntity.status(409).body("이미 사용 중인 이메일입니다.");
+        }
+
         String code = emailService.generateVerificationCode();
 
         EmailVerificationDTO verification = new EmailVerificationDTO();
@@ -42,6 +48,7 @@ public class EmailController {
             return ResponseEntity.status(500).body("이메일 발송 실패");
         }
     }
+
 
     // 인증 코드 확인
     @PostMapping("/verify-code")

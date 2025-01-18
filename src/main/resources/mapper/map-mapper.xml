@@ -53,4 +53,56 @@
         WHERE user_idx = #{userIdx})
         ORDER BY log_id, sequence;
     </select>
+
+    <select id="getPetAccompanyDetails" resultType="PetAccompanyDetailsRes">
+        SELECT cd.contentid, cd.contenttypeid,cd.title, cd.tel, cd.homepage, cd.firstimage, cd.firstimage2,
+               cd.addr1, cd.mapx, cd.mapy, cd.overview,
+               pai.relaAcdntRiskMtr, pai.acmpyTypeCd, pai.etcAcmpyInfo, pai.acmpyPsblCpam, pai.acmpyNeedMtr
+        FROM pet_accompany_info pai
+                 LEFT JOIN content_details cd ON pai.contentid = cd.contentid
+    </select>
+
+    <insert id="addCategoryFavorite">
+        INSERT INTO category_favorite (user_idx, id, place_name, phone, place_url, address_name, road_address_name, x, y)
+        VALUES (#{userIdx}, #{id}, #{placeName}, #{phone}, #{placeUrl}, #{addressName}, #{roadAddressName}, #{x}, #{y})
+    </insert>
+
+    <select id="getFavoritesByUserIdx" resultType="CategoryFavoriteGetRes">
+        SELECT
+            favorite_idx,
+            user_idx,
+            id,
+            place_name,
+            phone,
+            place_url,
+            address_name,
+            road_address_name,
+            x,
+            y
+        FROM category_favorite
+        WHERE user_idx = #{userIdx}
+    </select>
+
+    <delete id="deleteCategoryFavorite" >
+        DELETE FROM category_favorite
+        WHERE user_idx = #{userIdx} AND id = #{id}
+    </delete>
+
+    <select id="getAccompanyFavorite" resultType="AccompanyFavoriteGetRes">
+        SELECT cd.contentid, cd.contenttypeid,cd.title, cd.tel, cd.homepage, cd.firstimage, cd.firstimage2,
+               cd.addr1, cd.mapx, cd.mapy, cd.overview,
+               pai.relaAcdntRiskMtr, pai.acmpyTypeCd, pai.etcAcmpyInfo, pai.acmpyPsblCpam, pai.acmpyNeedMtr
+        FROM pet_accompany_info pai
+                 LEFT JOIN content_details cd ON pai.contentid = cd.contentid left join accompany_favorite af on pai.contentid = af.contentid
+        where af.user_idx =#{userIdx};
+    </select>
+
+    <insert id="addAccompanyFavorite">
+        insert into  accompany_favorite (user_idx,contentid)values(#{userIdx},#{contentId});
+    </insert>
+
+    <delete id="deleteAccompanyFavorite">
+        DELETE FROM accompany_favorite
+        WHERE user_idx = #{userIdx} AND contentid = #{contentId}
+    </delete>
 </mapper>

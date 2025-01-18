@@ -275,4 +275,11 @@ public class UserController {
         }
     }
 
+    @GetMapping("/check-kakao-id")
+    public ResponseEntity<Map<String, Boolean>> checkKakaoId(@RequestParam String kakaoId) {
+        boolean isDuplicate = userService.isKakaoIdExists(kakaoId);
+        return ResponseEntity.ok(Map.of("isDuplicate", isDuplicate));
+    }
+
+
 }

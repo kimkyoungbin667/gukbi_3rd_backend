@@ -16,4 +16,20 @@ public interface MapMapper {
     List<PathDTO> getPaths(Long userIdx);
 
     List<WalkDTO> getWalks(Long userIdx);
+
+    List<PetAccompanyDetailsRes>getPetAccompanyDetails();
+
+    int addCategoryFavorite(CategoryFavoriteAddReq categoryFavoriteAddReq);
+
+    List<CategoryFavoriteGetRes> getFavoritesByUserIdx(Long userIdx);
+
+    void deleteCategoryFavorite(Long userIdx, String id);
+
+    int addAccompanyFavorite(AccompanyFavoriteAddReq accompanyFavoriteAddReq);
+
+    List<AccompanyFavoriteGetRes> getAccompanyFavorite(AccompanyFavoriteGetReq accompanyFavoriteGetReq);
+
+    void deleteAccompanyFavorite(AccompanyFavoriteAddReq accompanyFavoriteAddReq);
+
+
 }

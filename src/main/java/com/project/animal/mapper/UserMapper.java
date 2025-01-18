@@ -31,4 +31,6 @@ public interface UserMapper {
     User findByKakaoId(@Param("kakaoId") String kakaoId);
 
     void updateUser(User user);
+
+    boolean isKakaoIdExists(String kakaoId);
 }
