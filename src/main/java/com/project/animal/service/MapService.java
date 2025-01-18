@@ -34,6 +34,7 @@ public class MapService {
     }
 
 
+    @Transactional
     public List<WalksGetRes> getWalks(WalksGetReq walksGetReq) {
         List<WalkDTO> walks = mapMapper.getWalks(walksGetReq.getUserIdx());
         List<PathDTO> paths = mapMapper.getPaths(walksGetReq.getUserIdx());
@@ -82,6 +83,36 @@ public class MapService {
 
         walkReq.setPaths(pathList);
         return walkReq;
+    }
+
+
+    @Transactional
+    public List<PetAccompanyDetailsRes> getPetAccompanyDetails() {
+        return mapMapper.getPetAccompanyDetails();
+    }
+
+
+    public int addCategoryFavorite(CategoryFavoriteAddReq categoryFavoriteAddReq) {
+        return mapMapper.addCategoryFavorite(categoryFavoriteAddReq);
+    }
+
+    public List<CategoryFavoriteGetRes> getFavoritesByUserIdx(Long userIdx) {
+        return mapMapper.getFavoritesByUserIdx(userIdx);
+    }
+
+    public void deleteCategoryFavorite(Long userIdx, String id) {
+        mapMapper.deleteCategoryFavorite(userIdx,id);
+    }
+
+    public int addAccompanyFavorite(AccompanyFavoriteAddReq accompanyFavoriteAddReq) {
+        return mapMapper.addAccompanyFavorite(accompanyFavoriteAddReq);
+    }
+    public List<AccompanyFavoriteGetRes> getAccompanyFavoritesByUserIdx(AccompanyFavoriteGetReq accompanyFavoriteGetReq) {
+        return mapMapper.getAccompanyFavorite(accompanyFavoriteGetReq);
+    }
+
+    public void deleteAccompanyFavorite(AccompanyFavoriteAddReq accompanyFavoriteAddReq) {
+        mapMapper.deleteAccompanyFavorite(accompanyFavoriteAddReq);
     }
 
 }
