@@ -1,12 +1,11 @@
 package com.project.animal.service;
 
-import com.project.animal.dto.chat.ChatRoomDTO;
-import com.project.animal.dto.chat.ChatRoomDetailDTO;
-import com.project.animal.dto.chat.SendMessageDTO;
+import com.project.animal.dto.chat.*;
 import com.project.animal.mapper.ChatMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ChatService {
@@ -32,5 +31,11 @@ public class ChatService {
     // 유저 프로필 가져오기
     public String getUserProfile(Long senderIdx) {
         return chatMapper.getUserProfile(senderIdx);
+    }
+
+    // 채팅 전송된 이미지 저장하기
+    public Integer saveSendImage(SaveImageDTO saveImageDTO) {
+        saveImageDTO.setImageUrl("/upload/"+saveImageDTO.getImageUrl());
+        return chatMapper.saveSendImage(saveImageDTO);
     }
 }

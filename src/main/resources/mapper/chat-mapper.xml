@@ -29,7 +29,7 @@
     </select>
 
     <select id="getChatRoomDetail" resultType="ChatRoomDetailDTO" parameterType="Long">
-        SELECT crd.*, u.user_profile_url as senderProfile
+        SELECT crd.message_idx, crd.room_idx, crd.sender_idx, crd.message, crd.sent_at, crd.image_url as image, u.user_profile_url as senderProfile
         FROM tb_chatRoomDetail crd
                  JOIN tb_user u ON crd.sender_idx = u.user_idx
         WHERE crd.room_idx = #{roomIdx}
@@ -50,6 +50,10 @@
         SELECT user_profile_url
         FROM tb_user
         WHERE user_idx = #{senderIdx}
-
     </select>
+
+    <insert id="saveSendImage" parameterType="SaveImageDTO">
+        INSERT INTO tb_chatRoomDetail(room_idx, sender_idx, sent_at, image_url)
+        VALUES (#{roomIdx}, #{senderIdx}, #{sentAt}, #{imageUrl})
+    </insert>
 </mapper>
