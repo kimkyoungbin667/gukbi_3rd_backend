@@ -29,8 +29,12 @@
     </select>
 
     <select id="getChatRoomDetail" resultType="ChatRoomDetailDTO" parameterType="Long">
-        SELECT * FROM tb_chatRoomDetail WHERE room_idx = #{roomIdx}
+        SELECT crd.*, u.user_profile_url as senderProfile
+        FROM tb_chatRoomDetail crd
+                 JOIN tb_user u ON crd.sender_idx = u.user_idx
+        WHERE crd.room_idx = #{roomIdx}
     </select>
+
 
     <insert id="sendMessage" parameterType="SendMessageDTO">
         INSERT INTO tb_chatRoomDetail(sender_idx, message, sent_at, room_idx)
@@ -41,4 +45,11 @@
                   #{roomIdx}
               )
     </insert>
+
+    <select id="getUserProfile" resultType="String">
+        SELECT user_profile_url
+        FROM tb_user
+        WHERE user_idx = #{senderIdx}
+
+    </select>
 </mapper>

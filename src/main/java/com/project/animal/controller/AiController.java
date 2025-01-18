@@ -1,68 +1,112 @@
 package com.project.animal.controller;
 
+import com.project.animal.ResponseData.ErrorMessage;
+import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.ai.AiMessageReqDTO;
+import com.project.animal.dto.ai.AiSolutionReq;
 import com.project.animal.dto.ai.AnimalResDTO;
 import com.project.animal.service.AiService;
-import lombok.Value;
+import com.project.animal.util.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/api/ai")
 @CrossOrigin(origins = "http://58.74.46.219:33333")
 public class AiController {
+
     @Autowired
     private AiService aiService;
 
-    @PostMapping("/chat")
-    public ResponseEntity<String> getChatResponse(@RequestBody AiMessageReqDTO AiMessageReqDTO) {
+    private static final Logger logger = LoggerFactory.getLogger(AiController.class);
 
-        System.out.println(AiMessageReqDTO.getPrompt());
-        String prompt = AiMessageReqDTO.getPrompt();
-        String response = aiService.getChatResponse(prompt);
-        return ResponseEntity.ok(response);  // React에 응답 반환
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    // ✅ 1. 고양이 AI 호출
+    @PostMapping("/chat/cat")
+    public ResponseEntity<String> getCatChatResponse(@RequestBody AiMessageReqDTO aiMessageReqDTO) {
+        String prompt = aiMessageReqDTO.getPrompt();
+        String response = aiService.getCatChatResponse(prompt);
+        return ResponseEntity.ok(response);
     }
 
+    // ✅ 2. 솔루션 AI 호출
+    @PostMapping("/chat/solution")
+    public ResponseEntity<String> getSolutionResponse(@RequestBody AiSolutionReq aiSolutionReq, @RequestHeader("Authorization") String token) {
+        ResponseData responseData = new ResponseData();
+
+        try {
+            String actualToken = token.replace("Bearer ", "");
+
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.err.println("권한 검증 실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("권한이 없습니다.");
+            }
+
+            String response = aiService.getSolutionResponse(aiSolutionReq);
+            System.out.println(response);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("솔루션 제공 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ✅ 3. 반려동물 목록 불러오기
     @GetMapping("/getAnimalList")
-    public ResponseEntity<List<AnimalResDTO>> getAnimalList() {
+    public ResponseEntity<?> getAnimalList() {
+        ResponseData responseData = new ResponseData();
 
-        List<AnimalResDTO> list = new ArrayList<>();
+        try {
+            Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        AnimalResDTO animalResDTO = new AnimalResDTO();
-        animalResDTO.setAge(4);
-        animalResDTO.setBreed("웰시코기");
-        animalResDTO.setName("춘식이");
-        animalResDTO.setImageUrl("testDog.jpg");
+            List<AnimalResDTO> list = aiService.getAnimalList(userIdx);
+            responseData.setData(list);
 
-        AnimalResDTO animalResDTO2 = new AnimalResDTO();
-        animalResDTO2.setAge(2);
-        animalResDTO2.setBreed("말티즈");
-        animalResDTO2.setName("진돗개");
-        animalResDTO2.setImageUrl("testDog2.jpg");
+            return ResponseEntity.ok(responseData);
 
-        AnimalResDTO animalResDTO3 = new AnimalResDTO();
-        animalResDTO3.setAge(5);
-        animalResDTO3.setBreed("먼치킨");
-        animalResDTO3.setName("냥농냥");
-        animalResDTO3.setImageUrl("testCat1.jpg");
+        } catch (ClassCastException e) {
+            System.err.println("권한 검증 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseData);
 
-        AnimalResDTO animalResDTO4 = new AnimalResDTO();
-        animalResDTO4.setAge(10);
-        animalResDTO4.setBreed("노르웨이 터키시 앙고라");
-        animalResDTO4.setName("앙콜라");
-        animalResDTO4.setImageUrl("testCat2.jpg");
+        } catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
+    }
 
-        list.add(animalResDTO);
-        list.add(animalResDTO2);
-        list.add(animalResDTO3);
-        list.add(animalResDTO4);
+    // ✅ 4. 특정 반려동물 상세 정보 조회
+    @PostMapping("/getAnimalDetail")
+    public ResponseEntity<Map<String, Object>> getAnimalDetail(@RequestBody AiSolutionReq aiSolutionReq, @RequestHeader("Authorization") String token) {
+        ResponseData responseData = new ResponseData();
+        Map<String, Object> map = new HashMap<>();
 
-        return ResponseEntity.ok(list);
+        try {
+            String actualToken = token.replace("Bearer ", "");
+
+            if (!jwtUtil.validateToken(actualToken)) {
+                System.err.println("권한 검증 실패");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+
+            map = aiService.getAnimalDetail(aiSolutionReq);
+            return ResponseEntity.ok(map);
+
+        } catch (Exception e) {
+            logger.error("Error : ", e);
+            responseData.setError(ErrorMessage.SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

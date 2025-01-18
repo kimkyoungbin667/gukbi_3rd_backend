@@ -29,7 +29,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/api/board")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class BoardController {
 
     private static final Logger logger = LoggerFactory.getLogger(BoardController.class);
@@ -101,7 +101,6 @@ public class BoardController {
 
         ResponseData responseData = new ResponseData();
 
-        System.out.println("씰행댐");
         try {
             // 사용자 인증 정보 가져오기
             Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -520,20 +519,28 @@ public class BoardController {
 
     }
 
-    // 게시글 파일 업로드하기
-    @PostMapping("/uploadFile")
-    public ResponseEntity<ResponseData> uploadFile(@RequestParam Long boardIdx,
-                                                   @RequestPart List<MultipartFile> files) {
+
+
+    // 사용자의 장소(즐겨찾기 or 산책경로) 불러오기
+    @GetMapping("/getLikeLocation")
+    @ResponseBody
+    public ResponseEntity<ResponseData> getLikeLocation(@RequestParam("kind") String kind) {
         ResponseData responseData = new ResponseData();
 
-        System.out.println(boardIdx);
-        System.out.println(files);
-
-        //boardImageService.uploadImages(boardIdx, files);
-
-        System.out.println(files);
+        System.out.println(kind);
         try {
             Long userIdx = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+            System.out.println(userIdx);
+            List<?> list = new ArrayList<>();
+
+            if(kind.equals("location")) {
+                //list = boardService.getLikeLocation(userIdx);
+
+            } else if (kind.equals("path")) {
+                list = boardService.getPath(userIdx);
+                responseData.setData(list);
+            }
 
             return ResponseEntity.ok(responseData);
 
@@ -550,6 +557,7 @@ public class BoardController {
             return ResponseEntity.ok(responseData);
         }
     }
+
 
 }
 
