@@ -20,5 +20,10 @@
         DELETE FROM email_verification WHERE expiration_time &lt; NOW()
     </delete>
 
+    <select id="isEmailExists" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM tb_user
+        WHERE user_email = #{email}
+    </select>
 
 </mapper>

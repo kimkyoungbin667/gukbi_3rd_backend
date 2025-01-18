@@ -17,8 +17,6 @@ public class FileService {
 
     private final String uploadDir = System.getProperty("user.dir") + "/src/main/upload/";
 
-    private final String petUploadDir = "C:/Users/202016017/Desktop/gukbi/3rd_Project/gukbi_3rd_backend/uploads/pets/";
-
     public String saveFile(MultipartFile file) {
         try {
             System.out.println("파일 이름: " + file.getOriginalFilename());
@@ -48,19 +46,19 @@ public class FileService {
 
     public String savePetFile(MultipartFile file) {
         try {
-            Path uploadPath = Paths.get(petUploadDir);
+            Path uploadPath = Paths.get(uploadDir);
 
             if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+                Files.createDirectories(uploadPath); // 디렉토리가 없으면 생성
             }
 
             String uniqueFileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
             Path filePath = uploadPath.resolve(uniqueFileName);
 
-            file.transferTo(filePath.toFile());
+            file.transferTo(filePath.toFile()); // 파일 저장
 
-            // URL에 http://localhost:8080 추가
-            return "http://localhost:8080/uploads/pets/" + uniqueFileName;
+            // 서버에서 접근 가능한 URL 반환
+            return "/upload/" + uniqueFileName;
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 중 오류 발생: " + e.getMessage());
         }

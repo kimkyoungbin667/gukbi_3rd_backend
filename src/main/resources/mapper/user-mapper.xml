@@ -11,7 +11,7 @@
 
     <!-- 로그인 시 사용할 메서드 -->
     <select id="findByEmail" resultType="com.project.animal.model.User">
-        SELECT user_idx, user_email, user_password
+        SELECT user_idx, user_email, user_password, is_admin, is_active
         FROM tb_user
         WHERE user_email = #{userEmail}
     </select>
@@ -100,6 +100,10 @@
         WHERE user_idx = #{userIdx}
     </update>
 
-
+    <select id="isKakaoIdExists" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM tb_user
+        WHERE kakao_id = #{kakaoId}
+    </select>
 
 </mapper>
