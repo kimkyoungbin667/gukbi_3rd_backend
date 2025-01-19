@@ -8,6 +8,17 @@ spring:
   profiles:
     active: local  # 활성화할 프로필 설정
 
+  web:
+    socket:
+      message:
+        max-size: 100MB  # ✅ 메시지 최대 크기를 100MB로 증가
+      send-buffer-size: 100MB  # ✅ 전송 버퍼 크기 증가
+
+  messaging:
+    websocket:
+      max-text-message-buffer-size: 104857600  # ✅ 100MB (텍스트)
+      max-binary-message-buffer-size: 104857600  # ✅ 100MB (이미지, 파일)
+
   config:
     import: application-secret.yaml  # secret 파일 불러오기
 

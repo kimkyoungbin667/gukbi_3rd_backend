@@ -4,10 +4,10 @@ import com.project.animal.config.JwtHandshakeInterceptor;
 import com.project.animal.util.JwtUtil;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -34,7 +34,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns("*") // 모든 도메인 허용
                 .setAllowedOrigins("http://58.74.46.219:33333")  // 클라이언트 주소 허용
                 .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
-                .withSockJS(); // SockJS 사용
+                .withSockJS();
     }
 
 }

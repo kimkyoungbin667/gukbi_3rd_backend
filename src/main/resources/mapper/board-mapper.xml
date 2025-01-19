@@ -199,4 +199,10 @@
         WHERE comment_idx = #{commentIdx}
     </update>
 
+    <select id="getPath" parameterType="GetLocationOrPathReqDTO" resultType="PathResDTO">
+        SELECT walk_name, walk_date, start_time, end_time, log_id
+        FROM walkinglogs
+        WHERE user_idx = #{userIdx}
+    </select>
+
 </mapper>
