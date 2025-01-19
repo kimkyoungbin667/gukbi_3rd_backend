@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -327,7 +328,10 @@ public class PetController {
     @GetMapping("/{petId}/graph-data")
     public ResponseEntity<?> getPetGraphData(
             @RequestHeader("Authorization") String token,
-            @PathVariable Long petId) {
+            @PathVariable Long petId,
+            @RequestParam String startDate, // 시작 날짜
+            @RequestParam String endDate    // 종료 날짜
+    ) {
         try {
             if (token == null || !token.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
@@ -339,7 +343,7 @@ public class PetController {
             }
 
             Long userId = jwtUtil.getIdFromToken(actualToken);
-            Map<String, Object> graphData = petService.getPetGraphData(userId, petId);
+            Map<String, Object> graphData = petService.getPetGraphData(userId, petId, LocalDate.parse(startDate), LocalDate.parse(endDate));
             return ResponseEntity.ok(graphData);
 
         } catch (RuntimeException e) {
@@ -348,4 +352,5 @@ public class PetController {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch graph data", "message", e.getMessage()));
         }
     }
+
 }

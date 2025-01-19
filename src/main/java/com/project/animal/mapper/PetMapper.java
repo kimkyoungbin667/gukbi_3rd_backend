@@ -32,10 +32,11 @@ public interface PetMapper {
     // 특정 펫의 하루 기록 조회
     List<Map<String, Object>> findDailyRecordsByPetId(@Param("petId") Long petId);
 
-    @Select("SELECT daily_id, pet_id, activity_date, meal_amount, water_intake " +
+    @Select("SELECT daily_id, pet_id, activity_date, COALESCE(meal_amount, 0) AS meal_amount, COALESCE(water_intake, 0) AS water_intake " +
             "FROM tb_pet_daily_activity " +
-            "WHERE pet_id = #{petId} AND meal_amount IS NOT NULL")
+            "WHERE pet_id = #{petId}")
     List<Map<String, Object>> findMealRecordsByPetId(@Param("petId") Long petId);
+
 
     @Select("SELECT daily_id, pet_id, activity_date, exercise_duration, exercise_distance " +
             "FROM tb_pet_daily_activity " +
@@ -50,15 +51,12 @@ public interface PetMapper {
     // 하루 기록 삭제
     void deleteDailyRecord(@Param("dailyId") Long dailyId);
 
-    @Select("SELECT activity_date, " +
-            "       DAYNAME(activity_date) AS dayOfWeek, " +
-            "       COALESCE(meal_amount, 0) AS mealAmount, " +
-            "       COALESCE(exercise_duration, 0) AS exerciseDuration, " +
-            "       COALESCE(weight, 0) AS weight, " +
-            "       COALESCE(water_intake, 0) AS waterIntake " +
-            "FROM tb_pet_daily_activity " +
-            "WHERE pet_id = #{petId}")
-    List<Map<String, Object>> findGraphDataByPetId(@Param("petId") Long petId);
+    List<Map<String, Object>> findGraphDataByPetId(
+            @Param("petId") Long petId,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate);
+
+
 
 
 }

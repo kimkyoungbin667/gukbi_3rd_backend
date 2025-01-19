@@ -129,18 +129,41 @@
 
     <select id="findDailyRecordsByPetId" resultType="map">
         SELECT
-            daily_id, pet_id, activity_date, activity_time, meal_amount, exercise_duration,
-            exercise_distance, weight, water_intake, notes, created_at
+            daily_id,
+            pet_id,
+            activity_date,
+            activity_time,
+            COALESCE(meal_amount, 0) AS meal_amount,
+            COALESCE(exercise_duration, 0) AS exercise_duration,
+            COALESCE(exercise_distance, 0) AS exercise_distance,
+            COALESCE(weight, 0) AS weight,
+            COALESCE(water_intake, 0) AS water_intake, -- NULL을 기본값 0으로 설정
+            notes,
+            created_at
         FROM tb_pet_daily_activity
         WHERE pet_id = #{petId}
         ORDER BY activity_date DESC
     </select>
+
+
+
 
     <delete id="deleteDailyRecord">
         DELETE FROM tb_pet_daily_activity
         WHERE daily_id = #{dailyId}
     </delete>
 
-
-
+    <select id="findGraphDataByPetId" resultType="map">
+        SELECT
+            activity_date,
+            DAYNAME(activity_date) AS dayOfWeek,
+            COALESCE(meal_amount, 0) AS mealAmount,
+            COALESCE(exercise_duration, 0) AS exerciseDuration,
+            COALESCE(weight, 0) AS weight,
+            COALESCE(water_intake, 0) AS waterIntake
+        FROM tb_pet_daily_activity
+        WHERE pet_id = #{petId}
+          AND activity_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY activity_date ASC
+    </select>
 </mapper>
