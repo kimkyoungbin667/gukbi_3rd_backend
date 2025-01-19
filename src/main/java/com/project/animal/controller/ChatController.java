@@ -5,7 +5,6 @@ import com.project.animal.dto.chat.ChatRoomDTO;
 import com.project.animal.dto.chat.ChatRoomDetailDTO;
 import com.project.animal.service.ChatService;
 import com.project.animal.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -86,6 +85,44 @@ public class ChatController {
         }
     }
 
+    // 현재 유저 닉네임 불러오기
+    @GetMapping("/getUserNickname")
+    @ResponseBody
+    public ResponseEntity<ResponseData> getUserNickname(@RequestParam(value = "userIdx") String userIdx, @RequestHeader("Authorization") String token) {
+        ResponseData responseData = new ResponseData();
+
+        System.out.println(userIdx);
+        token = token.replace("Bearer ", "");
+
+        // 토큰 검증
+        if (jwtUtil.validateToken(token)) {
+
+            try {
+
+                Long longUserIdx = jwtUtil.getIdFromToken(token);
+                String nickname = chatService.getUserNickname(longUserIdx);
+
+                if (nickname.isEmpty()) {
+                    responseData.setCode("204");
+                    responseData.setMsg("해당 유저의 닉네임이 없습니다.");
+                    responseData.setData(null);
+                }
+
+                responseData.setData(nickname);
+                return ResponseEntity.ok(responseData);
+
+            } catch (Exception e) {
+                e.printStackTrace(); // 서버 로그에 오류 출력
+                responseData.setCode("500"); // Internal Server Error
+                responseData.setMsg("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+                responseData.setData(null);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+            }
+
+        } else {
+            throw new RuntimeException("유효하지 않은 토큰 값입니다!");
+        }
 
 
+    }
 }

@@ -1,9 +1,6 @@
 package com.project.animal.mapper;
 
-import com.project.animal.dto.chat.ChatRoomDTO;
-import com.project.animal.dto.chat.ChatRoomDetailDTO;
-import com.project.animal.dto.chat.SaveImageDTO;
-import com.project.animal.dto.chat.SendMessageDTO;
+import com.project.animal.dto.chat.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -25,4 +22,7 @@ public interface ChatMapper {
 
     // 채팅으로 전송한 이미지 저장하기
     Integer saveSendImage(SaveImageDTO saveImageDTO);
+
+    // 유저 닉네임 가져오기
+    String getUserNickname(@Param("userIdx") Long userIdx);
 }
