@@ -29,6 +29,7 @@
 
     <select id="getWalks" parameterType="Long" resultType="WalkDTO">
         select log_id,
+               pet_id,
                walk_name,
                walk_date,
                start_time,
@@ -60,6 +61,7 @@
                pai.relaAcdntRiskMtr, pai.acmpyTypeCd, pai.etcAcmpyInfo, pai.acmpyPsblCpam, pai.acmpyNeedMtr
         FROM pet_accompany_info pai
                  LEFT JOIN content_details cd ON pai.contentid = cd.contentid
+        where pai.acmpyTypeCd != "불가능"
     </select>
 
     <insert id="addCategoryFavorite">
@@ -70,7 +72,6 @@
     <select id="getFavoritesByUserIdx" resultType="CategoryFavoriteGetRes">
         SELECT
             favorite_idx,
-            user_idx,
             id,
             place_name,
             phone,

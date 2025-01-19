@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CategoryFavoriteGetRes {
-        private Integer userIdx;        // 사용자 고유 ID
+        private Long favoriteIdx;// 사용자 고유 ID
         private String id;              // 장소 고유 ID
         private String placeName;       // 장소 이름
         private String phone;           // 전화번호

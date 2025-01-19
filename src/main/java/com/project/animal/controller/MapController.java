@@ -3,6 +3,7 @@ package com.project.animal.controller;
 import com.project.animal.ResponseData.ResponseData;
 import com.project.animal.dto.map.*;
 import com.project.animal.service.MapService;
+import com.project.animal.service.PetService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class MapController {
     private MapService mapService;
 
     Logger logger = LoggerFactory.getLogger(MapController.class);
+    @Autowired
+    private PetService petService;
 
     @PostMapping("/walkRoutes/add")
     public ResponseEntity<ResponseData> addWalk(@RequestBody WalkAddReq walkReq) {
@@ -109,6 +112,16 @@ public class MapController {
     public ResponseEntity<ResponseData> deleteAccompanyFavorite(@RequestBody AccompanyFavoriteAddReq accompanyFavoriteAddReq) {
         ResponseData responseData = new ResponseData();
         mapService.deleteAccompanyFavorite(accompanyFavoriteAddReq);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/getPetInfo")
+    public ResponseEntity<ResponseData> getPetInfo(@RequestBody WalksGetReq walksGetReq) {
+        ResponseData responseData = new ResponseData();
+        var result = petService.getPetsByUserId(walksGetReq.getUserIdx());
+        logger.info(result.toString());
+        responseData.setData(result);
+
         return ResponseEntity.ok(responseData);
     }
 

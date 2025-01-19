@@ -63,6 +63,7 @@ public class MapService {
     private WalksGetRes convertToWalksGetRes(WalkDTO walk, List<PathDTO> walkPaths) {
         WalksGetRes walkReq = new WalksGetRes();
         walkReq.setLogId(walk.getLogId());
+        walkReq.setPetId(walk.getPetId());
         walkReq.setWalkName(walk.getWalkName());
         walkReq.setWalkDate(walk.getWalkDate());
         walkReq.setStartTime(walk.getStartTime());
