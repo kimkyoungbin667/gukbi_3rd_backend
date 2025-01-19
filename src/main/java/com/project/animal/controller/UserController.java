@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
@@ -274,5 +274,26 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("액세스 토큰 갱신 실패: " + e.getMessage());
         }
     }
+
+    @GetMapping("/check-kakao-id")
+    public ResponseEntity<Map<String, Boolean>> checkKakaoId(@RequestParam String kakaoId) {
+        boolean isDuplicate = userService.isKakaoIdExists(kakaoId);
+        return ResponseEntity.ok(Map.of("isDuplicate", isDuplicate));
+    }
+
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Map<String, Boolean>> checkNicknameAvailability(@RequestParam(required = false) String nickname) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            System.out.println("닉네임 값이 비어 있습니다.");
+            return ResponseEntity.badRequest().body(Map.of("isAvailable", false));
+        }
+
+        System.out.println("중복 확인 요청 닉네임: " + nickname); // 서버 로그
+        boolean isAvailable = userService.isNicknameAvailable(nickname);
+        System.out.println("isAvailable: " + isAvailable);
+        return ResponseEntity.ok(Map.of("isAvailable", isAvailable));
+    }
+
+
 
 }

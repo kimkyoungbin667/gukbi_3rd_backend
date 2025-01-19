@@ -13,10 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -196,6 +193,15 @@ public class BoardService {
     //
     public Integer deleteBoardComment(BoardPostDeleteCommentReqDTO boardPostDeleteCommentReqDTO) {
         return boardMapper.deleteBoardComment(boardPostDeleteCommentReqDTO);
+    }
+
+    // 즐겨찾기 목록 불러오기
+    //public List<PathResDTO> getLikeLocation(Long userIdx) {
+    //}
+
+    // 산책 경로 불러오기
+    public List<PathResDTO> getPath(Long userIdx) {
+            return boardMapper.getPath(userIdx);
     }
 
     // 게시글 이미지 테이블에 이미지 저장

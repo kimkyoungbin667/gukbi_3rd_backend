@@ -13,7 +13,9 @@ import com.project.animal.mapper.UserMapper;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,19 +35,42 @@ public class UserService {
 
     // 회원 가입
     public void registerUser(RegisterDTO registerDTO) {
-        // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(registerDTO.getUserPassword());
-        System.out.println("Encoded password during registration: " + encodedPassword);
-        registerDTO.setUserPassword(encodedPassword);
+        // 비밀번호가 없는 경우 기본값 설정
+        if (registerDTO.getUserPassword() == null || registerDTO.getUserPassword().isEmpty()) {
+            String defaultPassword =  generateRandomPassword(10);
+            String encodedPassword = passwordEncoder.encode(defaultPassword); // 암호화된 비밀번호
+            registerDTO.setUserPassword(encodedPassword);
+        } else {
+            String encodedPassword = passwordEncoder.encode(registerDTO.getUserPassword());
+            registerDTO.setUserPassword(encodedPassword);
+        }
+
         userMapper.registerUser(registerDTO);
     }
-
 
     // 로그인
     public Map<String, String> login(LoginDTO loginDTO) {
         User user = userMapper.findByEmail(loginDTO.getEmail());
-        if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
-            throw new RuntimeException("Invalid email or password");
+
+        if (user == null) {
+            throw new RuntimeException("등록된 사용자가 없습니다.");
+        }
+
+        // 계정 활성화 여부 확인
+        if (!user.getIsActive()) {
+            throw new RuntimeException("비활성화된 계정입니다. 관리자에게 문의하세요.");
+        }
+
+        // 일반 로그인 처리
+        if (user.getSocialType() == null || user.getSocialType().equalsIgnoreCase("GENERAL")) {
+            if (!passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword())) {
+                throw new RuntimeException("비밀번호가 올바르지 않습니다.");
+            }
+        } else {
+            // 소셜 로그인 처리 (비밀번호 검증 없음)
+            if (loginDTO.getPassword() != null && !loginDTO.getPassword().isEmpty()) {
+                throw new RuntimeException("소셜 로그인은 비밀번호를 사용하지 않습니다.");
+            }
         }
 
         // 액세스 토큰 생성
@@ -61,9 +86,14 @@ public class UserService {
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         tokens.put("refreshToken", refreshToken);
+        tokens.put("isAdmin", String.valueOf(user.getIsAdmin())); // 관리자 여부 반환
+        tokens.put("isActive", String.valueOf(user.getIsActive())); // 활성화 여부 반환
 
         return tokens;
     }
+
+
+
 
     // 리프레시 토큰 검증 및 액세스 토큰 재발행
     public String refreshAccessToken(String refreshToken) {
@@ -93,20 +123,20 @@ public class UserService {
         String email = (String) kakaoAccount.get("email");
         String kakaoId = response.getBody().get("id").toString();
 
-        // 카카오 ID로 사용자 조회
         User user = userMapper.findByKakaoId(kakaoId);
         if (user == null) {
-            // 새 사용자 등록을 위한 DTO 생성
+            // 새 사용자 등록
             RegisterDTO registerDTO = new RegisterDTO();
-            registerDTO.setUserEmail(email);
+            registerDTO.setUserEmail(email != null ? email : "no-email");
             registerDTO.setUserName((String) ((Map<String, Object>) response.getBody().get("properties")).get("nickname"));
             registerDTO.setKakaoId(kakaoId);
             registerDTO.setSocialType("KAKAO");
 
-            // 새 사용자 등록
-            userMapper.registerUser(registerDTO);
+            // 기본 비밀번호 설정
+            String randomPassword = generateRandomPassword(10);
+            registerDTO.setUserPassword(passwordEncoder.encode(randomPassword));
 
-            // 등록 후 사용자 정보 다시 조회
+            userMapper.registerUser(registerDTO);
             user = userMapper.findByKakaoId(kakaoId);
         }
 
@@ -124,10 +154,11 @@ public class UserService {
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", newAccessToken);
         tokens.put("refreshToken", refreshToken);
+        tokens.put("isAdmin", String.valueOf(user.getIsAdmin())); // 관리자 여부 반환
+        tokens.put("isActive", String.valueOf(user.getIsActive())); // 활성화 여부 반환
 
         return tokens;
     }
-
 
     public void logout(Long userId) {
         // 리프레시 토큰 삭제
@@ -219,5 +250,24 @@ public class UserService {
         user.setKakaoTokenExpiry(LocalDateTime.now().plusHours(2)); // 만료 시간 갱신
         userMapper.updateUserProfile(user);
     }
+
+    public boolean isKakaoIdExists(String kakaoId) {
+        return userMapper.isKakaoIdExists(kakaoId);
+    }
+
+    // 랜덤 문자열 생성 메서드
+    private String generateRandomPassword(int length) {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[length];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes).substring(0, length);
+    }
+
+    // 닉네임 중복 확인
+    public boolean isNicknameAvailable(String nickname) {
+        System.out.println("닉네임 중복 검사 요청: " + nickname);
+        return userMapper.isNicknameAvailable(nickname);
+    }
+
 
 }

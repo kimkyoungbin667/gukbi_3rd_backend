@@ -11,6 +11,10 @@
                 ELSE cr.create_user_idx
                 END AS opponent_idx, -- 상대방 ID
             CASE
+                WHEN cr.create_user_idx = #{userIdx} THEN u2.user_nickname -- 상대방 닉네임 추가
+                ELSE u1.user_nickname
+                END AS opponent_nickname, -- 상대방 닉네임 추가
+            CASE
                 WHEN cr.create_user_idx = #{userIdx} THEN u2.user_name -- 상대방 이름
                 ELSE u1.user_name
                 END AS opponent_name, -- 상대방 이름
@@ -25,12 +29,16 @@
                 JOIN tb_user u2 ON cr.invited_user_idx = u2.user_idx
         WHERE
             cr.create_user_idx = #{userIdx} OR cr.invited_user_idx = #{userIdx}
-
     </select>
+
 
     <select id="getChatRoomDetail" resultType="ChatRoomDetailDTO" parameterType="Long">
-        SELECT * FROM tb_chatRoomDetail WHERE room_idx = #{roomIdx}
+        SELECT crd.message_idx, crd.room_idx, crd.sender_idx, crd.message, crd.sent_at, crd.image_url as image, u.user_profile_url as senderProfile
+        FROM tb_chatRoomDetail crd
+                 JOIN tb_user u ON crd.sender_idx = u.user_idx
+        WHERE crd.room_idx = #{roomIdx}
     </select>
+
 
     <insert id="sendMessage" parameterType="SendMessageDTO">
         INSERT INTO tb_chatRoomDetail(sender_idx, message, sent_at, room_idx)
@@ -41,4 +49,21 @@
                   #{roomIdx}
               )
     </insert>
+
+    <select id="getUserProfile" resultType="String">
+        SELECT user_profile_url
+        FROM tb_user
+        WHERE user_idx = #{senderIdx}
+    </select>
+
+    <insert id="saveSendImage" parameterType="SaveImageDTO">
+        INSERT INTO tb_chatRoomDetail(room_idx, sender_idx, sent_at, image_url)
+        VALUES (#{roomIdx}, #{senderIdx}, #{sentAt}, #{imageUrl})
+    </insert>
+
+    <select id="getUserNickname" parameterType="Long" resultType="String">
+        SELECT user_nickname
+        FROM tb_user
+        WHERE user_idx = #{userIdx}
+    </select>
 </mapper>

@@ -1,0 +1,43 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.project.animal.mapper.AiMapper">
+
+    <select id="getAnimalList" resultType="AnimalResDTO">
+        SELECT pet_id, dog_name, kind_name, profile_url
+        FROM tb_pet_info
+        WHERE user_idx = #{userIdx}
+    </select>
+
+    <select id="getAnimalInfo" resultType="AnimalResDTO">
+        SELECT pet_id, dog_name, sex, kind_name
+        FROM tb_pet_info
+        WHERE pet_id = #{longPetId}
+    </select>
+
+
+    <select id="getAnimalWalkPath" resultType="AnimalPathRes" parameterType="AiSolutionReq">
+        SELECT log_id, walk_date, distance, duration
+        FROM walkinglogs
+        WHERE pet_id = #{petId} AND walk_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="getAnimalDailyInfo" resultType="AnimalDailyInfoRes" parameterType="AiSolutionReq">
+        SELECT activity_date, activity_time, meal_amount, exercise_duration, exercise_distance, weight, water_intake, notes
+        FROM tb_pet_daily_activity
+        WHERE pet_id = #{petId} AND activity_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="getAnimalMedical" resultType="AnimalMedicalRes" parameterType="AiSolutionReq">
+        SELECT record_type, description, next_due_date, clinic_name, vet_name, notes, created_at
+        FROM tb_pet_medical_records
+        WHERE pet_id = #{petId} AND created_at BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+
+    <select id="getAnimalDetailInfo" resultType="AnimalDetailInfoRes" parameterType="AiSolutionReq">
+        SELECT birth_date, health_status, dietary_requirements, allergies, notes, updated_at
+        FROM tb_pet_details
+        WHERE pet_id = #{petId}
+    </select>
+</mapper>

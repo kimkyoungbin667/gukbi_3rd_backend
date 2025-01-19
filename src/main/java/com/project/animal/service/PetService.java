@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -198,6 +199,7 @@ public class PetService {
     }
 
     public List<Map<String, Object>> getMealRecords(Long petId) {
+        System.out.println("Fetched records: " + petMapper.findDailyRecordsByPetId(petId));
         return petMapper.findMealRecordsByPetId(petId); // 식사 기록만 조회
     }
 
@@ -214,14 +216,18 @@ public class PetService {
         petMapper.deleteDailyRecord(dailyId);
     }
 
-    public Map<String, Object> getPetGraphData(Long userId, Long petId) {
+    public Map<String, Object> getPetGraphData(Long userId, Long petId, LocalDate startDate, LocalDate endDate) {
         // 사용자와 펫 관계 확인
         if (!isPetOwnedByUser(userId, petId)) {
             throw new RuntimeException("Unauthorized access to pet data.");
         }
 
         // DB에서 그래프 데이터 조회
-        List<Map<String, Object>> records = petMapper.findGraphDataByPetId(petId);
+        List<Map<String, Object>> records = petMapper.findGraphDataByPetId(
+                petId,
+                startDate.toString(),
+                endDate.toString()
+        );
 
         // 데이터 그룹화 초기화
         Map<String, List<Double>> groupedData = new HashMap<>();
@@ -299,6 +305,7 @@ public class PetService {
                 )
         );
     }
+
 
     // 안전하게 숫자 변환하는 메서드
     private double safeConvertToDouble(Object value) {

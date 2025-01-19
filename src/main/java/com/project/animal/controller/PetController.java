@@ -12,12 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pet")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://58.74.46.219:33333")
 public class PetController {
 
     private final JwtUtil jwtUtil;
@@ -136,6 +137,7 @@ public class PetController {
             @PathVariable Long petId,
             @RequestParam("file") MultipartFile file) {
         try {
+            // 인증 검증 및 사용자 확인
             if (token == null || !token.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
             }
@@ -146,16 +148,22 @@ public class PetController {
             }
 
             Long userId = jwtUtil.getIdFromToken(actualToken);
-            String imageUrl = fileService.savePetFile(file);
 
-            petService.updatePetImage(userId, petId, imageUrl);
+            // 파일 저장 및 URL 생성
+            String relativeUrl = fileService.savePetFile(file);
+            String absoluteUrl = "http://localhost:8080" + relativeUrl;
 
-            return ResponseEntity.ok(Map.of("url", "http://localhost:8080" + imageUrl));
+            // 데이터베이스 업데이트
+            petService.updatePetImage(userId, petId, relativeUrl);
+
+            // URL 반환
+            return ResponseEntity.ok(Map.of("url", absoluteUrl));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("error", "Image upload failed", "message", e.getMessage()));
         }
     }
+
 
     @PostMapping("/details")
     public ResponseEntity<?> savePetDetails(
@@ -320,7 +328,10 @@ public class PetController {
     @GetMapping("/{petId}/graph-data")
     public ResponseEntity<?> getPetGraphData(
             @RequestHeader("Authorization") String token,
-            @PathVariable Long petId) {
+            @PathVariable Long petId,
+            @RequestParam String startDate, // 시작 날짜
+            @RequestParam String endDate    // 종료 날짜
+    ) {
         try {
             if (token == null || !token.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
@@ -332,7 +343,7 @@ public class PetController {
             }
 
             Long userId = jwtUtil.getIdFromToken(actualToken);
-            Map<String, Object> graphData = petService.getPetGraphData(userId, petId);
+            Map<String, Object> graphData = petService.getPetGraphData(userId, petId, LocalDate.parse(startDate), LocalDate.parse(endDate));
             return ResponseEntity.ok(graphData);
 
         } catch (RuntimeException e) {
@@ -341,4 +352,5 @@ public class PetController {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch graph data", "message", e.getMessage()));
         }
     }
+
 }

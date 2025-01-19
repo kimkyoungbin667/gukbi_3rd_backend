@@ -12,5 +12,7 @@ public class SendMessageDTO {
     private String senderToken;      // 보낸 사람 Token
     private Long senderIdx;            // 보낸 사람 idx
     private String message;       // 메시지 내용
+    private String senderProfile;   // 보낸 사람 프로필
     private LocalDateTime sentAt; // 클라이언트의 ISO 8601 문자열을 자동 변환
+
 }

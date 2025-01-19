@@ -11,4 +11,5 @@ public class ChatRoomDTO {
     private Long opponentIdx; // 상대방 ID
     private String opponentName; // 상대방 이름
     private String opponentProfileUrl; // 상대방 프로필 URL
+    private String opponentNickname; // 상대방 닉네임
 }
