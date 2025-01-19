@@ -38,4 +38,9 @@ public class ChatService {
         saveImageDTO.setImageUrl("/upload/"+saveImageDTO.getImageUrl());
         return chatMapper.saveSendImage(saveImageDTO);
     }
+
+    // 유저 닉네임 가져오기
+    public String getUserNickname(Long userIdx) {
+        return chatMapper.getUserNickname(userIdx);
+    }
 }
