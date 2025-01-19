@@ -106,4 +106,10 @@
         WHERE kakao_id = #{kakaoId}
     </select>
 
+    <select id="isNicknameAvailable" resultType="boolean">
+        SELECT COUNT(*) = 0
+        FROM tb_user
+        WHERE user_nickname = #{nickname}
+    </select>
+
 </mapper>

@@ -281,5 +281,19 @@ public class UserController {
         return ResponseEntity.ok(Map.of("isDuplicate", isDuplicate));
     }
 
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Map<String, Boolean>> checkNicknameAvailability(@RequestParam(required = false) String nickname) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            System.out.println("닉네임 값이 비어 있습니다.");
+            return ResponseEntity.badRequest().body(Map.of("isAvailable", false));
+        }
+
+        System.out.println("중복 확인 요청 닉네임: " + nickname); // 서버 로그
+        boolean isAvailable = userService.isNicknameAvailable(nickname);
+        System.out.println("isAvailable: " + isAvailable);
+        return ResponseEntity.ok(Map.of("isAvailable", isAvailable));
+    }
+
+
 
 }
