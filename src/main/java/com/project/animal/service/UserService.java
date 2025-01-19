@@ -263,5 +263,11 @@ public class UserService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes).substring(0, length);
     }
 
+    // 닉네임 중복 확인
+    public boolean isNicknameAvailable(String nickname) {
+        System.out.println("닉네임 중복 검사 요청: " + nickname);
+        return userMapper.isNicknameAvailable(nickname);
+    }
+
 
 }
