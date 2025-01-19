@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class WalksGetRes {
     private Long logId;         // 산책 로그 ID
+    private Long petId;
     private String walkName;    // 산책 이름
     private String walkDate;    // 산책 날짜
     private String startTime;   // 시작 시간

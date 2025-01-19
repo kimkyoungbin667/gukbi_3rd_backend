@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class WalkDTO {
     private Long logId;
+    private Long petId;
     private Long  userIdx;
     private String walkName;
     private String walkDate;
