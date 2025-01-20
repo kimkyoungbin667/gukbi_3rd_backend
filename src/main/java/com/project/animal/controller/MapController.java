@@ -87,7 +87,7 @@ public class MapController {
     @PostMapping("/category/deleteFavorite")
     public ResponseEntity<ResponseData> deleteCategoryFavorite(@RequestBody CategoryFavoriteDeleteReq categoryFavoriteDeleteReq) {
     ResponseData responseData = new ResponseData();
-        mapService.deleteCategoryFavorite(categoryFavoriteDeleteReq.getUserIdx(),categoryFavoriteDeleteReq.getContentid());
+        mapService.deleteCategoryFavorite(categoryFavoriteDeleteReq.getUserIdx(),categoryFavoriteDeleteReq.getId());
 
         return ResponseEntity.ok(responseData);
     }

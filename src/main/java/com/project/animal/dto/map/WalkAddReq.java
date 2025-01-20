@@ -7,7 +7,8 @@ import java.util.List;
 @Data
 public class WalkAddReq {
     private Long logId;
-    private Long  userIdx;
+    private Long petId;
+    private Long userIdx;
     private String walkName;
     private String walkDate;
     private String startTime;
