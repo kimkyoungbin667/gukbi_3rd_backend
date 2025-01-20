@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class CategoryFavoriteDeleteReq {
     private Long userIdx;
-    private String contentid;
+    private String id;
 }
