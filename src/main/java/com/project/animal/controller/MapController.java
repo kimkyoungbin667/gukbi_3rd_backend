@@ -87,7 +87,7 @@ public class MapController {
     @PostMapping("/category/deleteFavorite")
     public ResponseEntity<ResponseData> deleteCategoryFavorite(@RequestBody CategoryFavoriteDeleteReq categoryFavoriteDeleteReq) {
     ResponseData responseData = new ResponseData();
-        mapService.deleteCategoryFavorite(categoryFavoriteDeleteReq.getUserIdx(),categoryFavoriteDeleteReq.getContentid());
+        mapService.deleteCategoryFavorite(categoryFavoriteDeleteReq.getUserIdx(),categoryFavoriteDeleteReq.getId());
 
         return ResponseEntity.ok(responseData);
     }
@@ -122,6 +122,22 @@ public class MapController {
         logger.info(result.toString());
         responseData.setData(result);
 
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/accompany/getContentId")
+    public ResponseEntity<ResponseData> getContentId(@RequestBody AccompanyContentIdGetReq accompanyContentIdGetReq) {
+        ResponseData responseData = new ResponseData();
+        PetAccompanyDetailsRes result =  mapService.getPetAccompanyDetails(accompanyContentIdGetReq);
+        responseData.setData(result);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/category/getContentId")
+    public ResponseEntity<ResponseData> getId(@RequestBody AccompanyContentIdGetReq accompanyContentIdGetReq) {
+        ResponseData responseData = new ResponseData();
+        CategoryFavoriteGetRes result = mapService.getCategoryDetails(accompanyContentIdGetReq);
+        responseData.setData(result);
         return ResponseEntity.ok(responseData);
     }
 

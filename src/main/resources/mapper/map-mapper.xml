@@ -6,13 +6,14 @@
     <insert id="addWalk" parameterType="WalkAddReq" useGeneratedKeys="true" keyProperty="logId">
         insert into WALKINGLOGS
         (user_idx,
+         pet_id,
          walk_name,
          walk_date,
          start_time,
          end_time,
          distance,
          duration)
-        VALUES (#{userIdx},#{walkName}, #{walkDate}, #{startTime}, #{endTime}, #{distance}, #{duration})
+        VALUES (#{userIdx},#{petId}, #{walkName}, #{walkDate}, #{startTime}, #{endTime}, #{distance}, #{duration})
     </insert>
 
     <insert id="addPath" parameterType="PathAddReq">
@@ -106,4 +107,29 @@
         DELETE FROM accompany_favorite
         WHERE user_idx = #{userIdx} AND contentid = #{contentId}
     </delete>
+
+
+    <select id="getAccompanyContentId" resultType="PetAccompanyDetailsRes">
+        SELECT cd.contentid, cd.contenttypeid,cd.title, cd.tel, cd.homepage, cd.firstimage, cd.firstimage2,
+               cd.addr1, cd.mapx, cd.mapy, cd.overview,
+               pai.relaAcdntRiskMtr, pai.acmpyTypeCd, pai.etcAcmpyInfo, pai.acmpyPsblCpam, pai.acmpyNeedMtr
+        FROM pet_accompany_info pai
+                 LEFT JOIN content_details cd ON pai.contentid = cd.contentid left join accompany_favorite af on pai.contentid = af.contentid
+        where cd.contentid =#{contentId};
+    </select>
+
+    <select id="getCategoryContentId" resultType="CategoryFavoriteGetRes">
+        SELECT
+            id,
+            place_name,
+            phone,
+            place_url,
+            address_name,
+            road_address_name,
+            x,
+            y
+        FROM category_favorite
+        WHERE id = #{contentId}
+            LIMIT 1;
+    </select>
 </mapper>
