@@ -97,6 +97,9 @@ public class BoardController {
     public ResponseEntity<ResponseData> createBoardPost(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam("mapCategoryId") Long mapCategoryId,
+            @RequestParam("mapAccompanyId") Long mapAccompanyId,
+            @RequestParam("logId") Long logId,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
 
         ResponseData responseData = new ResponseData();
@@ -110,6 +113,9 @@ public class BoardController {
             boardPostCreateReqDTO.setTitle(title);
             boardPostCreateReqDTO.setContent(content);
             boardPostCreateReqDTO.setAuthorIdx(userIdx);
+            boardPostCreateReqDTO.setMapAccompanyId(mapAccompanyId);
+            boardPostCreateReqDTO.setMapCategoryId(mapCategoryId);
+            boardPostCreateReqDTO.setLogId(logId);
 
             // 이미지 파일 처리
             if (imageFiles != null && !imageFiles.isEmpty()) {

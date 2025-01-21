@@ -31,5 +31,8 @@ public interface MapMapper {
 
     void deleteAccompanyFavorite(AccompanyFavoriteAddReq accompanyFavoriteAddReq);
 
+    PetAccompanyDetailsRes getAccompanyContentId(AccompanyContentIdGetReq accompanyContentIdGetReq);
 
+
+    CategoryFavoriteGetRes getCategoryContentId(AccompanyContentIdGetReq accompanyContentIdGetReq);
 }

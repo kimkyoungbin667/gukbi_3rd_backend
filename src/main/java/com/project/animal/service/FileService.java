@@ -58,7 +58,7 @@ public class FileService {
             file.transferTo(filePath.toFile()); // 파일 저장
 
             // 서버에서 접근 가능한 URL 반환
-            return "/upload/" + uniqueFileName;
+            return uniqueFileName;
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 중 오류 발생: " + e.getMessage());
         }
@@ -80,7 +80,7 @@ public class FileService {
                 String uniqueFileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
                 Path filePath = uploadPath.resolve(uniqueFileName);
                 file.transferTo(filePath.toFile());
-                savedFilePaths.add("upload/" + uniqueFileName); // URL 경로 저장
+                savedFilePaths.add(uniqueFileName); // URL 경로 저장
                 System.out.println("파일 저장 성공: " + filePath.toAbsolutePath());
             }
 

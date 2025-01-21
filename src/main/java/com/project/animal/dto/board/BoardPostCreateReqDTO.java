@@ -13,6 +13,7 @@ public class BoardPostCreateReqDTO {
     private String content;         // 작성한 게시글 내용
     private Long authorIdx;         // 작성자 인덱스
     private List<String> imageFiles;    // 업로드 이미지 경로 리스트
-    private Long logId;             // 
-
+    private Long logId;
+    private Long mapAccompanyId;
+    private Long mapCategoryId;
 }
