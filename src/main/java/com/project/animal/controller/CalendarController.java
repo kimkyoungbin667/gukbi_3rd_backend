@@ -37,6 +37,7 @@ public class CalendarController {
     @GetMapping("/events")
     public ResponseEntity<List<EventDto>> getAllEvents() {
         List<EventDto> events = calendarService.getAllEvents();
+        System.out.println("events: " + events);
         return ResponseEntity.ok(events);
     }
 

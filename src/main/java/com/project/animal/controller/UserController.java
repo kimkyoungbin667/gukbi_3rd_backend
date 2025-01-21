@@ -16,6 +16,7 @@ import com.project.animal.service.UserService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -292,6 +293,24 @@ public class UserController {
         boolean isAvailable = userService.isNicknameAvailable(nickname);
         System.out.println("isAvailable: " + isAvailable);
         return ResponseEntity.ok(Map.of("isAvailable", isAvailable));
+    }
+
+    // 특정 사용자가 작성한 게시글 가져오기
+    @GetMapping("/posts/{userId}")
+    public ResponseEntity<List<Map<String, Object>>> getUserPosts(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        try {
+            // JWT 유효성 검사
+            String actualToken = token.replace("Bearer ", "");
+            if (!jwtUtil.validateToken(actualToken)) {
+                return ResponseEntity.status(401).body(null);
+            }
+
+            // 사용자가 작성한 게시글 가져오기
+            List<Map<String, Object>> posts = userService.getUserPosts(userId);
+            return ResponseEntity.ok(posts);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
 

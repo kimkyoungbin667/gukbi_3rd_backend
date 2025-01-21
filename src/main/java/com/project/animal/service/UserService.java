@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -267,6 +268,11 @@ public class UserService {
     public boolean isNicknameAvailable(String nickname) {
         System.out.println("닉네임 중복 검사 요청: " + nickname);
         return userMapper.isNicknameAvailable(nickname);
+    }
+
+    // 특정 사용자가 작성한 게시글 가져오기
+    public List<Map<String, Object>> getUserPosts(Long userId) {
+        return userMapper.getUserPosts(userId);  // UserMapper에서 작성한 쿼리 호출
     }
 
 
