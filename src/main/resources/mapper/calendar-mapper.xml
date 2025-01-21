@@ -4,8 +4,11 @@
 
     <!-- 모든 일정 조회 -->
     <select id="findAllEvents" resultType="com.project.animal.dto.calendar.EventDto">
-        SELECT * FROM tb_calendar
+        SELECT event_id AS eventId, pet_id AS petId, title, description, event_date AS eventDate,
+               event_time AS eventTime, user_idx AS userId
+        FROM tb_calendar
     </select>
+
 
     <!-- 특정 일정 조회 -->
     <select id="findEventById" resultType="com.project.animal.dto.calendar.EventDto" parameterType="long">

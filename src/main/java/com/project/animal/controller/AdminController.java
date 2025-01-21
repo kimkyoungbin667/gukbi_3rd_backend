@@ -49,7 +49,6 @@ public class AdminController {
         return ResponseEntity.ok(posts);
     }
 
-
     // 특정 게시글 삭제
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<Map<String, String>> deletePost(@PathVariable Long postId) {

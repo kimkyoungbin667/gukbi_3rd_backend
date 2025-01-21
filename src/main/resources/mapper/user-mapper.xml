@@ -112,4 +112,24 @@
         WHERE user_nickname = #{nickname}
     </select>
 
+    <!-- 특정 사용자가 작성한 게시글 가져오기 -->
+    <select id="getUserPosts" resultType="map">
+        SELECT
+        tb_board.board_idx,
+        tb_board.title,
+        tb_board.content,
+        tb_board.like_count,
+        tb_board.view_count,
+        tb_board.is_deleted,
+        tb_board.created_at,
+        tb_user.user_name AS author_name,
+        tb_user.user_email AS author_email
+        FROM tb_board
+        JOIN tb_user ON tb_board.created_by_user_idx = tb_user.user_idx
+        WHERE tb_board.is_deleted = 0
+        AND tb_board.created_by_user_idx = #{userId}  <!-- 특정 사용자 ID -->
+        ORDER BY tb_board.created_at DESC
+    </select>
+
+
 </mapper>

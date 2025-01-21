@@ -153,7 +153,6 @@ public class KakaoApiService {
         }
     }
 
-
     /**
      * 액세스 토큰을 포함한 HTTP 헤더 생성
      * @param accessToken 사용자의 액세스 토큰
