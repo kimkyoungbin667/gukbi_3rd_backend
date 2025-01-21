@@ -42,12 +42,19 @@
         INSERT tb_board(
             title,
             content,
-            created_by_user_idx
+            created_by_user_idx,
+            log_id,
+            map_accompany_id,
+            map_category_id
+
         )
         VALUES(
         #{title},
         #{content},
-        #{authorIdx}
+        #{authorIdx},
+        #{logId},
+        #{mapAccompanyId},
+        #{mapCategoryId}
         )
     </insert>
 
@@ -72,6 +79,9 @@
             b.created_by_user_idx AS createdByUserIdx,   -- 작성자 인덱스
             u.user_nickname AS createdByUserNickname,    -- 작성자 닉네임
             b.view_count AS viewCount,                   -- 조회수
+            b.log_id,
+            b.map_category_id,
+            b.map_accompany_id,
             CASE
                 WHEN EXISTS (
                     SELECT 1
@@ -98,7 +108,6 @@
             b.board_idx = #{boardIdx} AND b.is_deleted = 0
         GROUP BY
             b.board_idx; -- 게시글별로 그룹화
-
     </select>
 
     <update id="updateBoardPost" parameterType="BoardPostUpdateReqDTO">

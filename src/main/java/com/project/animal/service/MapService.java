@@ -116,4 +116,13 @@ public class MapService {
         mapMapper.deleteAccompanyFavorite(accompanyFavoriteAddReq);
     }
 
+    public PetAccompanyDetailsRes getPetAccompanyDetails(AccompanyContentIdGetReq accompanyContentIdGetReq) {
+        return mapMapper.getAccompanyContentId(accompanyContentIdGetReq);
+    }
+
+    public CategoryFavoriteGetRes getCategoryDetails(AccompanyContentIdGetReq accompanyContentIdGetReq) {
+        return mapMapper.getCategoryContentId(accompanyContentIdGetReq);
+    }
+
+
 }
