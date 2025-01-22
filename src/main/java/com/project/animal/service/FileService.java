@@ -37,7 +37,7 @@ public class FileService {
             file.transferTo(filePath.toFile()); // 파일 저장
             System.out.println("파일 저장 성공");
 
-            return "upload/" + uniqueFileName; // URL 반환
+            return "/upload/" + uniqueFileName; // URL 반환
         } catch (IOException e) {
             System.err.println("파일 저장 중 오류: " + e.getMessage());
             throw new RuntimeException("파일 저장 중 오류 발생: " + e.getMessage());

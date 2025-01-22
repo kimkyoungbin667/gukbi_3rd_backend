@@ -55,12 +55,14 @@
                                  updated_at = NOW()
     </insert>
 
-    <!-- 펫 상세 정보 조회 -->
+    <!-- 펫 상세 정보 조회 (가장 최신의 데이터만 조회) -->
     <select id="findPetDetailsByPetId" resultType="map">
         SELECT
-            detail_id, pet_id, birth_date, health_status, dietary_requirements, allergies, notes, created_at, updated_at
+        detail_id, pet_id, birth_date, health_status, dietary_requirements, allergies, notes, created_at, updated_at
         FROM tb_pet_details
         WHERE pet_id = #{petId}
+        ORDER BY updated_at DESC  <!-- 또는 created_at DESC -->
+        LIMIT 1  <!-- 가장 최신의 1개 레코드만 가져옴 -->
     </select>
 
     <!-- 의료 기록 조회 -->

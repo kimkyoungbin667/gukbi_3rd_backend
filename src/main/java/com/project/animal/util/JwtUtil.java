@@ -9,7 +9,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private final String SECRET_KEY = "RA4A7xk3zhWx3czBZPCtZpbalul7W4uZ1p3NzTjAC9kFbHX3CmRtL7";
-    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1시간
+    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 3; // 1시간
     private final long REFRESH_EXPIRATION_TIME = 1000L * 60 * 60 * 24 * 7; // 7일
 
     // 액세스 토큰 생성
