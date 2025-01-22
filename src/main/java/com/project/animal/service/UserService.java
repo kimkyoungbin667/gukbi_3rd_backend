@@ -272,6 +272,7 @@ public class UserService {
 
     // 특정 사용자가 작성한 게시글 가져오기
     public List<Map<String, Object>> getUserPosts(Long userId) {
+        System.out.println(userId);
         return userMapper.getUserPosts(userId);  // UserMapper에서 작성한 쿼리 호출
     }
 

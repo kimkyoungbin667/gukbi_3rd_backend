@@ -118,7 +118,6 @@
         tb_board.board_idx,
         tb_board.title,
         tb_board.content,
-        tb_board.like_count,
         tb_board.view_count,
         tb_board.is_deleted,
         tb_board.created_at,
